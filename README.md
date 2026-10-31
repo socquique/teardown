@@ -42,6 +42,18 @@ node sims/build.mjs cessna-live
 node sims/build.mjs strandbeest-live
 ```
 
+### Export to STL
+
+Any of the 3 machines can be exported for 3D printing or CAD, in millimetres:
+
+```
+node sims/export-stl.mjs v8                   # teardown-out/stl/v8/
+node sims/export-stl.mjs cessna --scale 0.1   # a 1:10 model
+node sims/export-stl.mjs strandbeest --pose 0.25
+```
+
+You get `assembly.stl` (every solid part where the simulator places it, at the pose asked for), `parts/` with each distinct part once, lying flat and centred, and `report.txt` with each part's size, how many the machine uses, and whether its mesh is closed. Overlays such as arrows, glass and glows are left out. The parts are built to look right, not to work: gear teeth, bores and clearances are visual, so use them as a starting point for a model, not as a working mechanism.
+
 ## What is inside
 
 | | |
@@ -50,6 +62,7 @@ node sims/build.mjs strandbeest-live
 | `sims/kit/` | Runtime, stage, shader warm-up. |
 | `sims/v8-*`, `sims/cessna-*`, `sims/strandbeest-*` | 3 complete machines. `-shared` is the machine, `-live` the page you drive, `-film` the recorded tour. |
 | `sims/build.mjs` | Bundles a machine into one HTML file, three.js and fonts inlined. |
+| `sims/export-stl.mjs` | Exports a machine's solid parts to STL: the assembly, each distinct part, and a printability report. |
 | `sims/capture.mjs` | Renders the film frame by frame to a 60 fps mp4, or to review sheets of stills. |
 | `sfx/`, `run_sfx.py` | Procedural sound on the film's timeline, mastered to −14 LUFS. |
 
