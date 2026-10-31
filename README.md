@@ -56,6 +56,9 @@ You get `assembly.stl` (every solid part where the simulator places it, at the p
 
 ### A walking Strandbeest you can print
 
+| ![Printable 12-leg Strandbeest, assembled with the TT motor](docs/strandbeest-walker.png) | ![Its gait: orange feet are on the ground](docs/strandbeest-walker-gait.gif) |
+|---|---|
+
 `sims/strandbeest-print/walker.py` turns the simulator's linkage into a 12-leg Strandbeest that walks on Bambu's TT motor (LA001, from the Marble Run kit 003), with no screws: printed snap pins, a crankshaft of hex couplers, 12:48 gears.
 
 ```
