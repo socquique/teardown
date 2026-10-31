@@ -68,6 +68,8 @@ python3 sims/strandbeest-print/pack.py teardown-out/print/strandbeest-walker   #
 python3 sims/strandbeest-print/verify_walker.py teardown-out/print/strandbeest-walker
 ```
 
+`node sims/build.mjs walker-live` builds its page: the walker on its motor, every plate sliced from the STLs you print (`export_web.py` writes `sims/walker-shared/parts.json`), posed by `jansen.js`.
+
 Layers are searched so that nothing collides over a full turn; `verify_walker.py` re-checks it from the STLs with its own solver. Leg phases (0/120/240° per side, 60° between sides) keep three feet down at all times.
 
 ## What is inside
