@@ -180,8 +180,26 @@ export function buildWalker(P) {
     const r = add(root, new THREE.BoxGeometry(rw, rh, railLen), M.frame);
     r.matrix.makeTranslation(x, ry, railLen / 2 - 2);
   }
-  // crankshaft: hex couplers through every frame, turning with the crank
-  const hex = add(root, new THREE.CylinderGeometry(3.46, 3.46, ZF[ZF.length - 1] + T + 3, 6).rotateX(Math.PI / 2).translate(0, 0, (ZF[ZF.length - 1] + T) / 2), M.shaft);
+  // crankshaft: there is no through axle (links j and k sweep across O). Each module's two webs carry the crank pin;
+  // short hex couplers join one module's web to the next through the frame between them, as printed (coupler,
+  // coupler-end, coupler-gear-short through the gear, coupler-gear-long through the motor bay).
+  const hexGeo = new THREE.CylinderGeometry(3.46, 3.46, 1, 6).rotateX(Math.PI / 2).translate(0, 0, 0.5);
+  const capGeo = new THREE.CylinderGeometry(5.5, 5.5, 1.6, 24).rotateX(Math.PI / 2).translate(0, 0, 0.8);
+  const gi0 = SECTIONS.indexOf('gear'), mi0 = SECTIONS.indexOf('motor');
+  const W = T - 0.2; // how far a coupler goes into a web
+  const zgear = ZF[gi0] + T + GAP; // the big gear's low face
+  const cps = [];
+  ZF.forEach((z, i) => {
+    let z0 = z - GAP - W, z1 = z + T + GAP + W, cap = null;
+    if (i === 0) { z0 = z - 1.6; cap = z0; }
+    if (i === ZF.length - 1) { z1 = z + T + 1.6; cap = z + T; }
+    if (i === gi0) z1 = zgear + 2.2; // into the gear's hex
+    if (i === gi0 + 1) return; // the motor plate: the long coupler below covers it
+    if (i === mi0 + 1) z0 = zgear + 2.4; // long coupler: gear -> motor plate -> motor bay -> back frame -> next web
+    const mesh = add(root, hexGeo, M.shaft);
+    const capMesh = cap === null ? null : add(root, capGeo, M.shaft);
+    cps.push({mesh, capMesh, z0, z1, cap, zc: (z0 + z1) / 2});
+  });
   // gears in the gear bay, motor in the motor bay
   const gi = SECTIONS.indexOf('gear');
   const zg = ZF[gi] + T + GAP;
@@ -266,7 +284,13 @@ export function buildWalker(P) {
       f.mesh.matrix.makeTranslation(0, 0, f.z + (f.z - mid) * ex * 1.6);
       f.mesh.material = iso >= 0 ? M.ghost : M.frame;
     }
-    hex.matrix.makeRotationZ(th);
+    for (const c of cps) {
+      const dz = (c.zc - mid) * ex * 1.6;
+      c.mesh.matrix.makeRotationZ(th).setPosition(0, 0, c.z0 + dz).multiply(T4.makeScale(1, 1, c.z1 - c.z0));
+      if (c.capMesh) c.capMesh.matrix.makeRotationZ(th).setPosition(0, 0, c.cap + dz);
+      c.mesh.visible = iso < 0;
+      if (c.capMesh) c.capMesh.visible = iso < 0;
+    }
     gear.matrix.makeTranslation(0, 0, zg).multiply(T4.makeRotationZ(th));
     pinion.matrix.makeTranslation(0, CD, zg).multiply(T4.makeRotationZ(-4 * th + Math.PI / 12));
     const zIso = iso >= 0 ? (ZF[iso] + ZF[iso + 1]) / 2 : 0;
