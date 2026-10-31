@@ -54,6 +54,19 @@ node sims/export-stl.mjs strandbeest --pose 0.25
 
 You get `assembly.stl` (every solid part where the simulator places it, at the pose asked for), `parts/` with each distinct part once, lying flat and centred, and `report.txt` with each part's size, how many the machine uses, and whether its mesh is closed. Overlays such as arrows, glass and glows are left out. The parts are built to look right, not to work: gear teeth, bores and clearances are visual, so use them as a starting point for a model, not as a working mechanism.
 
+### A walking Strandbeest you can print
+
+`sims/strandbeest-print/walker.py` turns the simulator's linkage into a 12-leg Strandbeest that walks on Bambu's TT motor (LA001, from the Marble Run kit 003), with no screws: printed snap pins, a crankshaft of hex couplers, 12:48 gears.
+
+```
+pip install manifold3d trimesh shapely
+python3 sims/strandbeest-print/walker.py            # parts -> teardown-out/print/strandbeest-walker/
+python3 sims/strandbeest-print/pack.py teardown-out/print/strandbeest-walker   # 5 print plates
+python3 sims/strandbeest-print/verify_walker.py teardown-out/print/strandbeest-walker
+```
+
+Layers are searched so that nothing collides over a full turn; `verify_walker.py` re-checks it from the STLs with its own solver. Leg phases (0/120/240° per side, 60° between sides) keep three feet down at all times.
+
 ## What is inside
 
 | | |

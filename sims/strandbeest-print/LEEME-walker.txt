@@ -1,0 +1,53 @@
+STRANDBEEST DE 12 PATAS CON MOTOR TT (Bambu LA001, el del kit Marble Run 003)
+Generado por sims/strandbeest-print/walker.py (fork socquique/teardown). Medidas: unos 21 x 22 x 19 cm.
+
+QUÉ NECESITAS
+  - El motor TT del kit Marble Run 003 (5 V USB, 59 rpm). Nada más: sin tornillos.
+  - Un cargador o power bank USB. El cable del motor mide 50 cm.
+  - PLA, unos 300-350 g. Bambu Studio te dará el tiempo exacto.
+
+IMPRIMIR
+  plates/plate-01..05.stl  -> todo repartido en 5 placas de 250 mm (en Bambu Studio: "Dividir en objetos" si
+                              quieres moverlos). Las piezas sueltas están también en la carpeta principal.
+  0.2 mm, 2-3 paredes, 15 % de relleno, sin soportes, todo plano tal cual sale.
+  Los pasadores se imprimen tumbados (tienen una cara plana): así son mucho más fuertes.
+  Si tu prueba del motor dio otro buje que el B, regenera el piñón: walker.py --flat 3.85 (A) o 4.05 (C).
+
+PIEZAS (por módulo hay una pata normal y otra espejo; las del espejo son LAS MISMAS piezas dadas la vuelta)
+  link-j, link-k, link-c, link-f, tri-upper, tri-foot   12 de cada
+  web (brazo del cigüeñal) 12 · washer (arandela) 24
+  pin-6.4 (B, D, E) 36 · pin-9.8 (C) 12 · pin-13.2 (P) 12 · pin-26.8 (A, manivela) 6
+  frames: 9 (2 de motor) · rail 2 · pinion + gear-48 · coupler 4 + coupler-end 2 + coupler-gear-short + -long
+
+ORDEN DE CAPAS DE UN MÓDULO (desde el marco de su izquierda hacia el de su derecha)
+  1 web · 2 link-j, link-c, link-f · 3 tri-upper, tri-foot · 4 link-k
+  5 link-k (espejo) · 6 tri-upper, tri-foot (espejo) · 7 link-j, link-c, link-f (espejo) · 8 web
+  Pasador A (largo) atraviesa todo el módulo por la manivela; arandelas en las capas 3 y 6 de ese pasador.
+  Pasador P: del marco a link-c y tri-upper, con una arandela en la capa 1.
+  Cabezas y patillas de los pasadores quedan dentro de sus avellanados: nada sobresale.
+
+MONTAJE
+  1. Monta UN módulo primero, con sus dos marcos, y gíralo a mano. Debe girar suave. Si algo roza,
+     pasa una broca de 4,5 mm por ese agujero. Mejor descubrirlo aquí que con los 6 montados.
+  2. Monta los 6 módulos. Los brazos (web) tienen un hexágono: entre módulos seguidos de un mismo lado gira la
+     manivela 120° (2 caras del hexágono). Entre los dos lados, 60° (1 cara). Orden de fases a lo largo del eje:
+     0°, 120°, 240° | engranaje | motor | 60°, 180°, 300°.
+  3. Los acopladores hexagonales unen los brazos a través de los marcos; los de los extremos llevan tapa.
+     El engranaje grande va entre el acoplador corto y el largo, en el hueco entre el marco 3 y el marco del motor.
+  4. El motor se apoya con la cara del eje contra el marco del motor: el eje sale por el agujero grande y el
+     tetón entra en su agujero. El marco de atrás lo sujeta (tiene un rebaje). Mete el piñón en el eje.
+  5. Pasa los dos raíles por los agujeros rectangulares de todos los marcos.
+  6. Enchufa el USB y a andar (unos 15 pasos por minuto).
+
+COMPROBADO ANTES DE IMPRIMIR (sims/strandbeest-print/verify_walker.py, a partir de estos mismos STL)
+  - En las 360 posiciones de la manivela: ninguna pieza se solapa con otra de su capa; ningún pasador, arandela o
+    raíl toca una pieza que no sea suya. Todas las mallas cerradas.
+  - Siempre hay 3 o más pies en el suelo y el centro queda dentro del apoyo (simulación de la marcha).
+  - Los engranajes 12:48 engranan sin tocarse (holgura mínima 0,21 mm).
+  - Con el STL oficial del motor: el motor no choca con nada.
+  - El pie es lo más bajo con 29 mm de margen sobre cualquier otra pieza.
+
+LO QUE NO SE PUEDE COMPROBAR SIN IMPRIMIRLO
+  - El rozamiento real de 70 articulaciones impresas frente al par del motor TT (300 g·cm al arrancar, x4 con
+    la reductora). Por eso el paso 1: si un módulo gira suave a mano, el motor podrá con los seis.
+  - El ajuste de los pasadores a clip en tu impresora.
