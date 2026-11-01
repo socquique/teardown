@@ -164,7 +164,7 @@ def write_bbl_3mf(path, plates, title):
     U = lambda a, b: f'{a:08x}-{b:04x}-4c03-9d28-80fed5dfa1dc'
     cols = math.ceil(math.sqrt(len(plates)))
     files, main_objs, build, settings, plate_xml, rels = {}, [], [], [], [], []
-    oid = 0; ident = 100
+    oid = 0; ident = 100; sub = 0          # sub-object ids must be unique across all object files
     for pi, (pname, objs) in enumerate(plates):
         r, c = divmod(pi, cols); ox, oy = c * STRIDE, -r * STRIDE
         inst = []
@@ -177,7 +177,7 @@ def write_bbl_3mf(path, plates, title):
                     ' <metadata name="BambuStudio:3mfVersion">1</metadata>', ' <resources>']
             comps = []; parts_cfg = []
             for k, (m, ck) in enumerate(parts_):
-                pid = k + 1
+                sub += 1; pid = sub
                 v = m.vertices - [cx, cy, lo[2]]
                 body.append(f'  <object id="{pid}" p:UUID="{U(oid, pid)}" type="model">')
                 body.append('   <mesh>\n    <vertices>')
