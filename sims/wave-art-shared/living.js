@@ -177,7 +177,7 @@ export function runLiving() {
   app.appendChild(legend);
   const ticks = Object.fromEntries([...legend.querySelectorAll('u')].map((u) => [u.dataset.b, u]));
   app.appendChild(el(`<div class="panel info"><h2>MECANISMO</h2>
-    <div><span>motor</span>TT · 5 V · 59 rpm</div><div><span>reducción</span>10:40 · 10:30 = 12:1</div>
+    <div><span>motor</span>TT · 5 V · 59 rpm</div><div><span>reducción</span>10:40 · 14:26 = ${L.ratio.toFixed(1)}:1</div>
     <div><span>eje de levas</span>${L.rpm.toFixed(1)} rpm</div>
     ${bodyOrder.map((bn) => `<div><span>${NAMES[bn][0]}</span>±${L.bodies[bn].amp.toFixed(1)}° · e ${L.bodies[bn].e.toFixed(2)}</div>`).join('')}
     <div><span>holgura mín.</span>0,23 mm</div><div><span>soportes</span>ninguno</div></div>`));
@@ -265,7 +265,7 @@ export function runLiving() {
     [0, () => (goView(1), (S.mechT = 0), (S.exT = 0), (S.fast = false)), 'Nada está pegado encima: la ola misma respira'],
     [12, () => (S.fast = true), 'A ×4: la ola, el mar y la orilla, cada uno a su compás'],
     [22, () => (goView(2), (S.fast = false)), 'Cada lámina pivota en un pasador escondido bajo el marco'],
-    [32, () => (goView(3), (S.mechT = 1)), 'Detrás del cielo: un eje de levas y el motor TT a 12:1'],
+    [32, () => (goView(3), (S.mechT = 1)), 'Detrás del cielo: un eje de levas y el motor TT a 7,4:1'],
     [44, () => goView(4), 'Tres excéntricas en horquillas: empujan y tiran, sin muelles'],
     [56, () => (goView(2), (S.mechT = 0), (S.exT = 1)), 'Despiece: tres cuerpos, cuatro colores cada uno'],
     [66, () => (S.exT = 0), ''],

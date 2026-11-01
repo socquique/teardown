@@ -1,7 +1,7 @@
 # A living picture: the relief wave (wave_art.py) cut into three bodies that move. The wave (with its water, lines
 # and crest foam), the sea in front of it and the near sea each rock a degree or two on a pin hidden under the
 # frame's lip. Behind the back panel (sky + sun, still) one camshaft carries three eccentric discs, each running in
-# a yoke on its body's arm, so every body is pushed both ways and never hangs on gravity. TT motor, 12:1.
+# a yoke on its body's arm, so every body is pushed both ways and never hangs on gravity. TT motor, 7.4:1 (a cycle every 7.6 s).
 #   python3 sims/strandbeest-print/living.py   -> teardown-out/print/living-wave/ (+ sims/wave-art-shared/living.json)
 import math, os, sys, json
 import numpy as np, trimesh
@@ -141,8 +141,10 @@ def on_shaft(m, x, t):
     a = math.radians(t); c, s = math.cos(a), math.sin(a)
     return m.transform([[0, 0, 1, x], [s, -c, 0, SH_Y], [c, s, 0, SH_Z]])
 
-# --- gear train behind the right of the panel: motor pinion 10 -> 40 | 10 -> 30 on the camshaft = 12:1
+# --- gear train behind the right of the panel: motor pinion 10 -> 40 | 14 -> 26 on the camshaft = 7.4:1
 M_ = 1.0
+ZP, ZB, ZC, ZS = 10, 40, 14, 26           # pinion, compound big/small, shaft gear (ZC + ZS = 40: centre distance 20)
+RATIO = (ZB / ZP) * (ZS / ZC)
 def gp(z, bl=0.5): return gear_poly(z, M_, M_ * z / 2 + 0.85 * M_, M_ * z / 2 - 1.25 * M_ - 0.1, math.pi * M_ / 2 - bl / 2)
 GT = 4.0
 GA = 90.0                              # x of the gear planes: shaft gear and compound's 10 at GA..GA+4
@@ -188,8 +190,8 @@ def fixed():
     # the camshaft's right bearing: a plate just before the gear (the gear sits on the shaft's end)
     F['bearing'] = box(GA - 3.6, GA - 0.6, YB, SH_Y + 12.0, REAR, -3.0) - Manifold.cylinder(5, SH_R + 0.35, SH_R + 0.35, SEG).rotate([0, 90, 0]).translate([GA - 4.6, SH_Y, SH_Z])
     F['motor'] = box(MB + 3.0, MB + 3.0 + 18.8, my - 11.2, my + 37.2, mz - 11.2, mz + 11.2)                # TT body (stand-in)
-    F['g30'] = ext(gp(30), GT) - d_hole(SH_R + 0.2, SH_FLAT + 0.2, 0, GT + 2)
-    F['g_comp'] = ext(gp(10), GT, 0) + ext(gp(40), GT, GT + 0.6) - cyl(1.95, 20, 0, 0, -1)
+    F['g30'] = ext(gp(ZS), GT) - d_hole(SH_R + 0.2, SH_FLAT + 0.2, 0, GT + 2)
+    F['g_comp'] = ext(gp(ZC), GT, 0) + ext(gp(ZB), GT, GT + 0.6) - cyl(1.95, 20, 0, 0, -1)
     F['g_pin'] = ext(gp(10), GT, 0) - (cyl(2.8, 9, 0, 0, -1) ^ box(-1.975, 1.975, -4, 4, -2, 9))           # TT D-shaft
     for bn in BODIES: F['ecc_' + bn], F['washer_' + bn] = ecc(bn)
     return F
@@ -198,8 +200,8 @@ def fixed():
 def g2d(z, c, a): return affinity.translate(affinity.rotate(gp(z), a, origin=(0, 0)), c[0], c[1])
 def phases():
     s = (SH_Y, SH_Z)
-    pc = max((g2d(10, CPD, a).distance(g2d(30, s, 0)), a) for a in np.linspace(0, 36, 145))[1]
-    pm = max((g2d(10, MOT, a).distance(g2d(40, CPD, pc)), a) for a in np.linspace(0, 36, 145))[1]
+    pc = max((g2d(ZC, CPD, a).distance(g2d(ZS, s, 0)), a) for a in np.linspace(0, 360 / ZC, 145))[1]
+    pm = max((g2d(ZP, MOT, a).distance(g2d(ZB, CPD, pc)), a) for a in np.linspace(0, 360 / ZP, 145))[1]
     return pc, pm
 PC, PM = phases()
 
@@ -212,10 +214,10 @@ def pose_all(F, bodies, t):
         P[f'ecc:{bn}'] = on_shaft(F['ecc_' + bn], b['drive'], t + b['phase'])
         P[f'washer:{bn}'] = on_shaft(F['washer_' + bn], b['drive'], t + b['phase'])
     P['shaft'] = on_shaft(F['shaft_local'], IX0 - 4.0, t)
-    # the shaft gear turns with the shaft: local rotation -t (see on_shaft); compound +3t; pinion -12t
+    # the shaft gear turns with the shaft: local rotation -t (see on_shaft); compound +t ZS/ZC; pinion -t RATIO
     P['g30'] = at_yz(F['g30'], GA, (SH_Y, SH_Z), -t)
-    P['g_comp'] = at_yz(F['g_comp'], GA, CPD, PC + 3 * t)
-    P['g_pin'] = at_yz(F['g_pin'], GB, MOT, PM - 12 * t)
+    P['g_comp'] = at_yz(F['g_comp'], GA, CPD, PC + t * ZS / ZC)
+    P['g_pin'] = at_yz(F['g_pin'], GB, MOT, PM - t * RATIO)
     for k in ('back', 'sun', 'base', 'side_l', 'side_r', 'top', 'rear', 'frame', 'bracket', 'bearing', 'motor'): P[k] = F[k]
     return P
 
@@ -275,8 +277,8 @@ if __name__ == '__main__':
                  ('top', 'caja-techo'), ('rear', 'caja-tapa-trasera'), ('frame', 'marco'), ('bracket', 'soporte-motor'), ('bearing', 'soporte-eje')):
         to_tm(F[k]).export(os.path.join(OUT, f'{n}.stl'))
     to_tm(F['shaft_local']).export(os.path.join(OUT, 'eje-levas.stl'))
-    to_tm(F['g30']).export(os.path.join(OUT, 'engranaje-30.stl'))
-    to_tm(F['g_comp']).export(os.path.join(OUT, 'engranaje-doble-40-10.stl'))
+    to_tm(F['g30']).export(os.path.join(OUT, 'engranaje-26.stl'))
+    to_tm(F['g_comp']).export(os.path.join(OUT, 'engranaje-doble-40-14.stl'))
     to_tm(F['g_pin']).export(os.path.join(OUT, 'pinon-motor-10.stl'))
     # --- data for the page: every mesh in art coordinates, plus how each moves
     def mesh(m):
@@ -290,11 +292,11 @@ if __name__ == '__main__':
                    ('rear', '#d8d2c4'), ('frame', '#2b2b2b'), ('bracket', '#9aa3ad'), ('bearing', '#9aa3ad'), ('motor', '#f2c200')):
         parts.append(dict(name=k, color=col, fixed=True, mesh=mesh(F[k])))
     parts.append(dict(name='shaft', color='#c0c4c8', shaft=True, mesh=mesh(F['shaft_local'])))
-    for k, c, x, n, ph in (('g30', (SH_Y, SH_Z), GA, -1, 0.0), ('g_comp', CPD, GA, 3, PC), ('g_pin', MOT, GB, -12, PM)):
+    for k, c, x, n, ph in (('g30', (SH_Y, SH_Z), GA, -1, 0.0), ('g_comp', CPD, GA, ZS / ZC, PC), ('g_pin', MOT, GB, -RATIO, PM)):
         parts.append(dict(name=k, color='#e0a030', gear=dict(x=x, y=c[0], z=c[1], ratio=n, phase=ph), mesh=mesh(F[k])))
     data = dict(WIN=WIN, IX0=IX0, IX1=IX1, YB=YB, TOP=TOP, LIP_Z=LIP_Z, REAR=REAR, SH_Y=SH_Y, SH_Z=SH_Z, PIV_Y=PIV_Y,
                 bodies={k: dict(pivot=v['pivot'], drive=v['drive'], e=v['e'], D=v['D'], phase=v['phase'], amp=v['amp']) for k, v in BODIES.items()},
-                parts=parts, rpm=59.0 / 12.0, shaft_x=IX0 - 4.0)
+                parts=parts, rpm=59.0 / RATIO, ratio=RATIO, shaft_x=IX0 - 4.0)
     p = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'wave-art-shared', 'living.json')
     json.dump(data, open(p, 'w'), separators=(',', ':'))
     print('ok', os.path.getsize(p) // 1024, 'KB json;', len([f for f in os.listdir(OUT) if f.endswith('.stl')]), 'STL')
