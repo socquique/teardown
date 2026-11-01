@@ -1,0 +1,19 @@
+PATA DE JANSEN DE BOLSILLO - una placa, sin tornillos, sin motor
+Generada por sims/strandbeest-print/pocket.py (fork socquique/teardown), con la misma pata que el simulador.
+
+Imprimir: pocket-leg-plate.stl (173 x 142 mm, cabe en la A1 mini), PLA, 0.2 mm, 3 paredes, 15 %, sin soportes.
+          Unos 30 g. Las piezas sueltas están también aquí por si quieres reimprimir alguna.
+
+Piezas: mango (frame), rueda (wheel), link-j, link-k, link-c, link-f, tri-upper, tri-foot,
+        pasadores a clip de 4 tamaños (cada nombre dice en qué articulaciones van) y 5 arandelas.
+
+Orden de capas desde el mango hacia fuera:
+  0 mango · 1 rueda, link-f · 2 tri-upper · 3 link-j, link-c · 4 link-k · 5 tri-foot
+  Las arandelas rellenan los huecos: una en P (capa 1), una en A (capa 2), tres en E (capas 2, 3 y 4).
+  La cabeza y la patilla de cada pasador quedan dentro de su avellanado.
+
+Uso: sujeta el mango, gira la rueda con el pulgar y el pie dibuja el paso de un Strandbeest.
+     El agujero del extremo del mango es para una anilla de llavero.
+
+Comprobado en las 360 posiciones de la rueda: ninguna pieza se solapa con otra de su capa y ningún pasador o
+arandela toca una pieza que no sea suya. Todas las mallas cerradas.

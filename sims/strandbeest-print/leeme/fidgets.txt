@@ -1,0 +1,28 @@
+CUATRO FIDGETS - generados y comprobados por sims/strandbeest-print/fidgets.py (fork socquique/teardown)
+
+AJUSTES PARA LOS "IMPRESOS MONTADOS" (los tres primeros): PLA, capa 0.2 mm, 3 paredes, 15 %, SIN soportes
+y SIN brim. Activa la compensación de pata de elefante (0.15 mm): si la primera capa se aplasta, las piezas
+se sueldan entre sí. Al sacarlo de la cama, gíralo con fuerza una vez: los huecos de 0,35 mm se sueltan.
+
+1. GINEBRA (geneva-print-in-place.stl, 83 x 56 x 13 mm, ~32 g)
+   Gira la rueda naranja por su borde: la cruz avanza 90° de golpe y se queda bloqueada hasta la vuelta
+   siguiente. Comprobado: holgura mínima 0,35 mm durante todo el giro; con la cruz parada, intentar
+   girarla 4° choca contra el disco de bloqueo (bloquea de verdad).
+
+2. PLANETARIO EN ESPIGA (planetary-print-in-place.stl, 70 x 11 mm, ~33 g)
+   Sujeta el sol (agujero hexagonal) y gira el anillo: los cuatro planetas ruedan. Dientes en espiga
+   (25°) que mantienen las piezas juntas sin portasatélites. Holgura mínima 0,34 mm en todo el engrane.
+
+3. TRINQUETE CON MUELLES IMPRESOS (ratchet-print-in-place.stl, 58 x 10 mm, ~26 g)
+   Sujeta el centro (hueco para el pulgar) y gira el anillo: en sentido horario hace clic-clic, en
+   antihorario se bloquea. Tres brazos de 1,2 mm hacen de muelle; se doblan 1,25 mm por diente
+   (deformación ~1,2 %, holgada para PLA; en PETG aún mejor). El anillo va retenido por un rodamiento
+   en V de 45°, imprimible sin soportes.
+
+4. LAMBDA DE CHEBYSHEV (lambda-plate.stl, una placa de 166 x 72 mm, ~10 g)
+   Gira la ruedecita y el pájaro recorre 41 mm en línea recta, luego vuelve por arriba en arco.
+   Se monta con 4 pasadores a clip y 2 arandelas finas:
+     capas: 0 base · 1 rueda · 2 balancín (azul) · 3 biela con el pájaro
+     pasador 6,4 mm en A (rueda-base) y C (biela-balancín); 9,8 mm en B (rueda-biela) y D (base-balancín)
+     arandela en B (capa 2) y en D (capa 1)
+   Comprobado en todo el giro: ninguna pieza toca otra de su capa, ni pasador ni arandela una pieza ajena.

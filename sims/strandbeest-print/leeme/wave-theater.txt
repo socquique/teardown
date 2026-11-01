@@ -1,0 +1,20 @@
+TEATRO DE OLAS - generado y comprobado por sims/strandbeest-print/theater.py (fork socquique/teardown)
+Caja de 120 x 134 x 72 mm. Motor: el TT del kit Marble Run (5 V USB). Rodillos a 7,4 rpm, alternando sentido.
+
+IMPRIMIR (PLA, 0.2 mm, sin soportes)
+  Caja: teatro-base, teatro-fondo, teatro-pared-izq, teatro-pared-der (con el pivote del engranaje doble),
+        teatro-techo, teatro-soporte-motor, teatro-tapa-motor  -> en negro
+  Rodillos: teatro-rodillo-1 (azul marino), -2 (azul), -3 (celeste), DE PIE (la espiral no necesita soportes)
+  Engranajes: teatro-engranaje-20-x3 (imprime 3), teatro-engranaje-40-10, teatro-pinon-10-motor
+  Ola del fondo: ola-cuadro-capas.stl con cambios de filamento en 1,6 / 2,4 / 3,6 / 4,8 / 6,0 mm
+        (crema, rojo, marino, azul, celeste, blanco), o los ola-color-N con AMS.
+
+MONTAR
+  1. Pega la ola en el rebaje del fondo. Fondo y paredes sobre la base.
+  2. Rodillos de delante (1, abajo) a atrás (3, arriba): sus ejes en los agujeros de las paredes, el lado
+     con el plano en D hacia la derecha. Techo encima.
+  3. Fuera de la pared derecha: un engranaje de 20 en cada eje, el doble 40/10 en su pivote (el 10 hacia la pared).
+  4. Motor entre soporte y tapa, cara del eje contra el soporte; piñón de 10 en su eje, en el plano del 40.
+
+COMPROBADO en toda la vuelta: rodillos a 0,62 mm entre sí, engranajes con 0,33 mm de holgura como mínimo,
+rodillos a 0,35 mm de las paredes; nada toca la base ni el motor.

@@ -1,0 +1,19 @@
+OLA EN RELIEVE - cuadro de 124 x 124 mm (diseño propio, generado por sims/strandbeest-print/wave_art.py)
+
+Cada color es una franja de altura, así que se imprime en cualquier impresora con cambios de filamento:
+  0,0 - 1,6 mm  crema    (fondo)
+  1,6 - 2,4 mm  rojo     (el sol)
+  2,4 - 3,6 mm  azul marino
+  3,6 - 4,8 mm  azul
+  4,8 - 6,0 mm  celeste
+  6,0 - 7,2 mm  blanco   (espuma)
+
+OPCIÓN A (sin AMS): imprime ola-cuadro-capas.stl boca arriba, capa de 0,2 mm, 100 % de relleno o 4 paredes.
+  En Bambu Studio, en la barra de capas de la vista previa, añade "Cambiar filamento" en 1,6 / 2,4 / 3,6 / 4,8 / 6,0 mm.
+OPCIÓN B (con AMS): importa los seis ola-color-N-*.stl a la vez y responde "Sí" a cargarlos como un solo objeto
+  con varias piezas; asigna a cada pieza su filamento.
+
+Marco: ola-marco.stl en negro (boca abajo, sin soportes) y ola-tapa-trasera.stl (con ojo de cerradura para colgar).
+  El cuadro entra por detrás, luego la tapa a presión.
+
+Cada franja está entera encima de la anterior: nada se imprime en el aire.

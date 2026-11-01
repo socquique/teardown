@@ -1,0 +1,65 @@
+# Notas de diseño: lo aprendido
+
+Lo que vale para cualquier pieza nueva de esta carpeta. Las medidas marcadas como *pendiente* esperan a la
+probeta (`probeta.py`). Cuando haya resultados de impresión, se anotan aquí con fecha.
+
+## Impresoras y material
+- Bambu Lab A1 (con AMS/BMCU) y P2S Combo (AMS). Cama 256 × 256. PLA, boquilla 0,4.
+- Proyectos `.3mf` se generan para la A1 0.4; en la P2S basta cambiar la impresora en Bambu Studio.
+
+## Holguras (verificadas en simulación, *pendiente* de confirmar impresas)
+| Uso | Valor |
+|---|---|
+| Piezas que giran o deslizan (mínimo aceptado en barridos) | ≥ 0,19 mm; normal 0,23–0,35 |
+| Print-in-place | 0,35 |
+| Engranajes m1: backlash | 0,5 (0,75 en los primeros diseños) |
+| Pivote: agujero sobre tornillo M3 / pasador Ø3 | Ø3,5 |
+| Tetón a presión Ø2,5 en agujero ciego | Ø2,4 (*pendiente*: probeta A, 2,3 / 2,4 / 2,5) |
+| Tapón sobre rosca M3 | agujero Ø2,7 (*pendiente*: probeta B, 2,6 / 2,7 / 2,8) |
+| Cierre a presión de tapas | labio a 0,15 de la pared, cordón r 0,45 → 0,3 de apriete en ranura r 0,6 (*pendiente*: probeta C) |
+| Eje en D Ø6, plano a 2,2: agujero en D | +0,2 en radio y en plano; cojinete Ø6,7 |
+| Lengüetas en ranuras (deslizar) | +0,25 |
+| Encaje de capas de color impresas aparte (descartado) | 0,08 |
+
+## Motor TT (LA001, kit Marble Run 003)
+- 59 rpm a 5 V. Eje en D: Ø5,4, planos a 3,7 → agujero en el piñón Ø5,6 con planos a 3,95.
+- Para fijarlo en una placa: saliente del eje (agujero Ø9), tetón a +11,15 mm del eje (agujero Ø4,1),
+  bulto a +30,7 (ranura 5,6 × 4,6). Envolvente de la caja reductora: 18,8 × 22,4 × 48,4 (de −11,2 a +37,2 desde el eje).
+- No basta con colocarlo: hay que apretarlo contra la placa (en el cuadro vivo, nervios en la pared de la caja, 0,05 de apriete).
+- *Pendiente*: probeta E confirma las tres posiciones.
+
+## Uniones sin pegamento (lo que se ha elegido y por qué)
+- **Colores con AMS:** cada color es una columna que sale de la base hasta su altura, y los colores superiores atraviesan
+  a los inferiores. Nada flota, nada se pega. Una lámina de color impresa aparte encima de otra solo funciona pegada.
+- **Brazo en una pieza plana:** dos tetones Ø2,5 en agujeros ciegos (la lámina se imprime cara atrás en la cama, así que
+  los brazos que salen hacia atrás se imprimen aparte).
+- **Pivotes:** tornillo M3 avellanado (DIN 7991) por detrás, al ras; un pasador impreso de Ø3 y 24 mm de alto es demasiado frágil.
+- **Caja:** un tubo de una pieza impreso de pie (sin soportes); tapas delante y detrás con labio y cordón a presión;
+  paneles interiores con lengüetas en ranuras abiertas por detrás y cerradas por delante (tope); soportes en raíles del suelo.
+- **Ejes:** cabeza en un extremo, engranaje en D en el otro; las excéntricas quedan atrapadas por su horquilla
+  (pestaña a un lado, arandela en D al otro, 1 mm de juego porque la horquilla se inclina con su lámina).
+
+## Errores que ya han pasado (comprobar siempre)
+- **Piezas que no están unidas:** comprobar `len(m.decompose()) == 1` en toda pieza que deba ser una. Pasó con el engranaje
+  doble (hueco de 0,6 entre ruedas) y con la lámina de la ola (las patas no tocaban la ola).
+- **Pinzamientos de malla:** regiones 2D que se tocan en un punto dan mallas no estancas. Limpiar con
+  `buffer(-0.1).buffer(0.1)` y descartar trozos < 0,6 mm².
+- **Pasadores con tope fijo:** si el tope va impreso en la punta, la pieza no se puede meter. El tope va aparte.
+- **Láminas de color "flotando":** en un apilado, una capa alta sin nada debajo no se puede imprimir ni pegar en su sitio.
+- **Tetones tangentes:** dos cilindros que se tocan en una línea dan aristas no-manifold.
+
+## 3MF para Bambu Studio
+- 3MF genérico (núcleo + `m:colorgroup`, `pid`/`pindex` por objeto): Bambu solo carga geometría y color, sin placas
+  ("El 3mf no es de Bambu Lab…"). Una pieza multicolor = objeto con `components`, un componente por color.
+- Proyecto de Bambu (placas y filamentos ya puestos): `Application` = `BambuStudio-…`, objetos en `3D/Objects/*.model`
+  referenciados con `p:path`, `Metadata/model_settings.config` (partes con `extruder`, placas con `model_instance`)
+  y un `Metadata/project_settings.config` completo (se parte de uno guardado por Bambu: `bbl/project_settings_A1_8xPLA.json`).
+- **Los id de los sub-objetos deben ser únicos entre todos los archivos** `3D/Objects/*.model`: Bambu los empareja solo por id
+  (con id repetidos, todas las piezas cargaron la forma de la primera).
+- Placas: columnas = `ceil(sqrt(n))`, paso 256 × 1,2 = 307,2 mm; la placa i empieza en (col · 307,2, −fila · 307,2).
+
+## Verificación que se hace siempre
+- Barrido del ciclo completo (cada 10–15°) con `min_gap` entre todos los pares que se mueven.
+- Lo oculto no asoma por la ventana en ninguna posición.
+- Todas las mallas estancas al volver a leer el 3MF.
+- Vista previa de las placas en imagen antes de entregar.

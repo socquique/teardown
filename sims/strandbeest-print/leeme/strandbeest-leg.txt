@@ -1,0 +1,22 @@
+Strandbeest leg — printable kit, 1.5 mm per Jansen unit
+
+Layers (0 = frame): frame=0, crank=2, link-j=4, link-k=5, link-c=2, link-f=2, triangle-upper=3, triangle-foot=3
+Checked at every 1° of the crank: no two parts on a layer overlap; no screw passes through a part that is not on it.
+
+Screws
+  O: M3 × 10 (threads into the frame, no nut) — frame, crank
+  P: M3 × 12 (threads into the frame, no nut) — frame, link-c, triangle-upper
+  A: M3 × 20 + M3 nyloc nut, snug, not tight — crank, link-j, link-k
+  B: M3 × 12 + M3 nyloc nut, snug, not tight — link-j, triangle-upper
+  C: M3 × 20 + M3 nyloc nut, snug, not tight — link-k, link-c, triangle-foot
+  D: M3 × 12 + M3 nyloc nut, snug, not tight — link-f, triangle-upper
+  E: M3 × 12 + M3 nyloc nut, snug, not tight — link-f, triangle-foot
+
+Print
+  PLA or PETG, 0.2 mm layers, 3 walls, 30 % infill, flat on the bed, no supports.
+  Washers: 4 fill the empty layers on the screws; the rest are spares.
+  Holes are 3.4 mm (turning) and 2.8 mm (frame, threaded). If a joint is stiff, run a 3.5 mm drill through it.
+
+Assemble
+  Hold the frame by its tab, or screw the tab (two 4 mm holes) to the side of an upright stick so the leg can swing freely. Build up from the frame: on each screw put the
+  parts in layer order, a washer wherever a layer is empty, then the nut. Turn the wheel by its rim.

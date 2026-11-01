@@ -1,0 +1,50 @@
+CUADRO VIVO · LA OLA  (versión AMS, sin pegamento)
+==================================================
+La ola en relieve, pero viva: la ola, el mar y la orilla se mecen cada uno a su compás (±2,2°, ±1,0°, ±1,5°).
+Detrás del cielo, un eje de levas con tres excéntricas en horquillas, movido por el motor TT del kit de Marble Run
+(10:40 · 14:26 = 7,4:1, un ciclo cada ~7,6 s). Caja 142 × 164 × 94 mm. Sin soportes y sin pegamento.
+
+ARCHIVOS
+- cuadro-vivo.3mf: PROYECTO DE BAMBU STUDIO. Cada grupo de piezas ya está en su placa, tumbado y con sus colores,
+  y los 8 filamentos ya vienen puestos (PLA, impresora A1 0.4). Si imprimes en la P2S, cambia la impresora arriba
+  a la izquierda: las placas y los colores se mantienen.
+  Placa 1 olas (AMS, 4 colores) · 2 cielo y sol (AMS, 2 colores) · 3 caja · 4 marco · 5 tapa (negro) · 6 mecanismo (gris)
+  Filamentos: 1 azul marino, 2 azul, 3 celeste, 4 blanco, 5 crema, 6 rojo, 7 negro, 8 gris.
+- cuadro-vivo-generico.3mf y por-placa/: lo mismo en 3MF estándar, para otros laminadores.
+- *.stl: las piezas sueltas.
+
+CÓMO ENCAJA TODO (sin loctite)
+- Colores: van impresos dentro de cada pieza (cada color es una columna que sale del azul marino; nada flota).
+- Brazos: cada brazo lleva dos tetones de 2,5 mm que entran a presión en la pata de su lámina (agujeros ciegos).
+- Fondo: tiene 3 lengüetas por lado que entran en las ranuras de la caja por detrás, hasta el tope.
+- Pasadores: 3 tornillos M3 de cabeza avellanada (DIN 7991) metidos por detrás del fondo, al ras:
+  M3x10 para la ola, M3x20 para el mar, M3x30 para la orilla. Más fuertes que un pasador impreso.
+- Láminas: se cuelgan de los tornillos; un tapón impreso se enrosca a presión en cada punta (agujero 2,7 mm).
+- Excéntricas: entran en las horquillas; el eje en D atraviesa la pared izquierda, arandelas y excéntricas
+  (las arandelas en D van a presión) hasta el soporte. El eje tiene cabeza fuera de la caja y el engranaje-26 en la punta.
+- Soporte de engranajes: una sola pieza en U (motor + cojinete del eje) que entra por detrás en los raíles del suelo
+  de la caja, hasta tocar el fondo. El engranaje doble gira en su pasador; el piñón va en el eje del TT.
+- Motor TT: se coloca en el soporte con su saliente del eje, su tetón y su bulto en los huecos del soporte (no gira
+  ni se desplaza), y al entrar el conjunto en la caja dos nervios de la pared derecha lo aprietan contra el soporte.
+- Marco y tapa trasera: se clavan a presión en la caja (un cordón en su labio salta en una ranura de la caja).
+  La tapa sujeta el soporte y el fondo en su sitio; tiene ranura para colgar y ventana para el cable (3–5 V).
+
+ANTES DE NADA: PROBETA DE AJUSTES (probeta.3mf, unos minutos)
+  A  tetones de brazo en agujeros de 2,3 / 2,4 (el del diseño, marcado *) / 2,5: ¿cuál entra firme sin partir?
+  B  tapones de 2,6 / 2,7 (diseño) / 2,8 en un tornillo M3; tira con el M3 por el agujero de pivote de 3,5
+     (debe girar libre) y el avellanado (la cabeza debe quedar al ras)
+  C  tapa con cordón en la pared con ranura: ¿hace clic? ¿sale con la mano?
+  D  eje en D: la arandela debe entrar apretada; el eje debe girar libre en el cojinete
+  E  motor TT en la placa: saliente, tetón y bulto deben entrar; el piñón debe entrar en el eje del motor
+  Cuéntame qué tal y ajusto las medidas a tu impresora.
+
+ORDEN DE MONTAJE
+1. Brazos en las patas de sus láminas (aprieta con los dedos o un tornillo de banco suave).
+2. Caja boca abajo sobre su frente. Mete el fondo por detrás, deslizando las lengüetas hasta el tope.
+3. Mete los 3 tornillos por detrás del fondo. Por delante: cuelga la ola, el mar y la orilla en sus tornillos (sus brazos atraviesan las ranuras) y pon los tapones.
+4. Por detrás: excéntricas en las horquillas, eje desde la izquierda con arandelas, soporte de engranajes por los raíles,
+   engranaje-26 en la punta del eje, engranaje doble, motor con su piñón.
+5. Marco por delante y tapa por detrás: clic.
+
+Holguras verificadas en todo el giro: ≥0,19 mm. Si un ajuste a presión queda flojo, una gota de pegamento lo arregla;
+si queda duro, lija un poco el tetón o el pasador.

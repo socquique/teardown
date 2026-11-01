@@ -1,0 +1,29 @@
+CUATRO OBJETOS - generados y comprobados por sims/strandbeest-print/objects.py (fork socquique/teardown)
+Todo en PLA, 0.2 mm, 3 paredes, 15 %, sin soportes salvo donde se indica.
+
+1. ESCULTURA DE OLAS (wave/) - con el motor TT del kit Marble Run
+   24 láminas sobre un árbol de levas excéntricas: una ola sinusoidal que avanza sin fin, unas 12 por minuto.
+   Imprime: base, 2 paredes, 2 peines, soporte y tapa del motor, eje en D (tumbado sobre su cara plana),
+   24 levas numeradas (cam-01..24, número grabado), 24 láminas (slat), engranaje 60, piñón 12, collarín.
+   Monta: paredes en la base, eje por las paredes con las levas EN ORDEN 1..24, el engranaje fuera de la pared
+   derecha, el collarín fuera de la izquierda. Peine de abajo entra desde atrás, el de arriba desde delante.
+   Deja caer las láminas por los peines sobre sus levas. Motor entre soporte y tapa, piñón en su eje.
+   Comprobado: holgura mínima 0,32 mm (engranajes) y 0,35 mm (láminas/peines) en toda la vuelta.
+
+2. PLANETARIO SOL-TIERRA-LUNA (orrery/)
+   Empuja el brazo con el pomo: una vuelta es un año. La Luna da 12,36 vueltas respecto al Sol (real 12,37),
+   así que sus fases salen bien. Engranajes 60 (fijo) -> 15/34 -> 15 -> 11.
+   Monta: brazo sobre el poste; engranaje doble e intermedio colgados con sus pasadores a clip; el engranaje
+   de la Luna con su tubo por el agujero del brazo; brazo de la Luna y Tierra a presión en el hexágono; Sol arriba.
+   Comprobado: holgura mínima 0,34 mm en todos los engranes durante dos meses lunares.
+
+3. FLOR (flower/) - pasadores de filamento de 1,75 mm
+   Sube el anillo del tallo y los 6 pétalos se abren de 10° a 68°; bájalo y se cierran.
+   Imprime 6 pétalos (planos), 6 bielas, el cáliz con tallo (de pie), el deslizador y el anillo.
+   Pasadores: trozos de filamento de 1,75 mm (agujeros de 1,9 mm): 6 bisagras, 12 en las bielas.
+   Comprobado: ni pétalos ni bielas se tocan en todo el recorrido (holgura mínima 0,3 mm).
+
+4. CALENDARIO PERPETUO (calendar/) - impreso montado, de una pieza
+   Tres anillos sobre un núcleo: mes, día y día de la semana, con un clic en cada posición.
+   Se lee en las muescas de las bases. Sin brim y con compensación de pata de elefante.
+   Comprobado: 0,32 mm de holgura entre núcleo y anillos; los retenes encajan en cada muesca (7, 31 y 12).
