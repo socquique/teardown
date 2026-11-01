@@ -148,6 +148,83 @@ def write_3mf(path, objects, title):
                    '<Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>')
         z.writestr('3D/3dmodel.model', '\n'.join(model))
 
+BBL_VERSION = '02.00.02.01'
+def write_bbl_3mf(path, plates, title):
+    """A Bambu Studio project: every piece on its own plate, filaments already set to the eight colours (A1, PLA).
+    plates: [(plate name, [(piece name, [(trimesh, colour key), ...], (x, y) on that plate)])]. The project settings
+    are a Bambu-saved A1 project with 8 PLA filaments (sims/strandbeest-print/bbl/), only colours and tower changed."""
+    import json, xml.sax.saxutils as X
+    cfg = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bbl', 'project_settings_A1_8xPLA.json')))
+    assert len(cfg['filament_colour']) == len(ORDER)
+    cfg['filament_colour'] = [COLOURS[k][1] for k in ORDER]
+    cfg['enable_prime_tower'] = '1'
+    cfg['wipe_tower_x'] = ['215'] * len(plates); cfg['wipe_tower_y'] = ['20'] * len(plates)
+    NSH = ('xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" '
+           'xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p"')
+    U = lambda a, b: f'{a:08x}-{b:04x}-4c03-9d28-80fed5dfa1dc'
+    cols = math.ceil(math.sqrt(len(plates)))
+    files, main_objs, build, settings, plate_xml, rels = {}, [], [], [], [], []
+    oid = 0; ident = 100
+    for pi, (pname, objs) in enumerate(plates):
+        r, c = divmod(pi, cols); ox, oy = c * STRIDE, -r * STRIDE
+        inst = []
+        for name, parts_, (x, y) in objs:
+            oid += 1; top = 1000 + oid
+            allv = np.vstack([m.vertices for m, _ in parts_]); lo, hi = allv.min(0), allv.max(0)
+            cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
+            fpath = f'/3D/Objects/object_{oid}.model'
+            body = [f'<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" {NSH}>',
+                    ' <metadata name="BambuStudio:3mfVersion">1</metadata>', ' <resources>']
+            comps = []; parts_cfg = []
+            for k, (m, ck) in enumerate(parts_):
+                pid = k + 1
+                v = m.vertices - [cx, cy, lo[2]]
+                body.append(f'  <object id="{pid}" p:UUID="{U(oid, pid)}" type="model">')
+                body.append('   <mesh>\n    <vertices>')
+                body.extend(f'     <vertex x="{a:.6f}" y="{b:.6f}" z="{c_:.6f}"/>' for a, b, c_ in v)
+                body.append('    </vertices>\n    <triangles>')
+                body.extend(f'     <triangle v1="{a}" v2="{b}" v3="{c_}"/>' for a, b, c_ in m.faces)
+                body.append('    </triangles>\n   </mesh>\n  </object>')
+                comps.append(f'    <component p:path="{fpath}" objectid="{pid}" p:UUID="{U(oid, 0x1000 + pid)}" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>')
+                pname_ = name if len(parts_) == 1 else f'{name} · {COLOURS[ck][0]}'
+                parts_cfg.append(f'    <part id="{pid}" subtype="normal_part">\n      <metadata key="name" value="{X.escape(pname_)}"/>\n'
+                                 f'      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n'
+                                 f'      <metadata key="extruder" value="{ORDER.index(ck) + 1}"/>\n    </part>')
+            body += [' </resources>', ' <build/>', '</model>']
+            files[fpath[1:]] = '\n'.join(body)
+            rels.append(fpath)
+            main_objs.append(f'  <object id="{top}" p:UUID="{U(top, 0)}" type="model">\n   <components>\n' + '\n'.join(comps) + '\n   </components>\n  </object>')
+            build.append(f'  <item objectid="{top}" p:UUID="{U(top, 0x2000)}" transform="1 0 0 0 1 0 0 0 1 {ox + x + cx:.4f} {oy + y + cy:.4f} {lo[2]:.4f}" printable="1"/>')
+            settings.append(f'  <object id="{top}">\n    <metadata key="name" value="{X.escape(name)}"/>\n'
+                            f'    <metadata key="extruder" value="{ORDER.index(parts_[0][1]) + 1}"/>\n' + '\n'.join(parts_cfg) + '\n  </object>')
+            ident += 1
+            inst.append(f'    <model_instance>\n      <metadata key="object_id" value="{top}"/>\n      <metadata key="instance_id" value="0"/>\n'
+                        f'      <metadata key="identify_id" value="{ident}"/>\n    </model_instance>')
+        plate_xml.append(f'  <plate>\n    <metadata key="plater_id" value="{pi + 1}"/>\n    <metadata key="plater_name" value="{X.escape(pname)}"/>\n'
+                         f'    <metadata key="locked" value="false"/>\n' + '\n'.join(inst) + '\n  </plate>')
+    main = [f'<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" {NSH}>',
+            f' <metadata name="Application">BambuStudio-{BBL_VERSION}</metadata>', ' <metadata name="BambuStudio:3mfVersion">1</metadata>',
+            f' <metadata name="Title">{X.escape(title)}</metadata>', ' <metadata name="Designer">socquique</metadata>',
+            ' <resources>'] + main_objs + [' </resources>', f' <build p:UUID="{U(0xffff, 0)}">'] + build + [' </build>', '</model>']
+    with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as z:
+        z.writestr('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n'
+                   ' <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n'
+                   ' <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>\n'
+                   ' <Default Extension="png" ContentType="image/png"/>\n <Default Extension="gcode" ContentType="text/x.gcode"/>\n</Types>')
+        z.writestr('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
+                   ' <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n</Relationships>')
+        z.writestr('3D/3dmodel.model', '\n'.join(main))
+        z.writestr('3D/_rels/3dmodel.model.rels', '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
+                   + '\n'.join(f' <Relationship Target="{f}" Id="rel-{i + 1}" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>' for i, f in enumerate(rels))
+                   + '\n</Relationships>')
+        for f, txt in files.items(): z.writestr(f, txt)
+        z.writestr('Metadata/project_settings.config', json.dumps(cfg, indent=4))
+        z.writestr('Metadata/model_settings.config', '<?xml version="1.0" encoding="UTF-8"?>\n<config>\n' + '\n'.join(settings) + '\n'
+                   + '\n'.join(plate_xml) + '\n</config>\n')
+        z.writestr('Metadata/slice_info.config', '<?xml version="1.0" encoding="UTF-8"?>\n<config>\n  <header>\n'
+                   f'    <header_item key="X-BBL-Client-Type" value="slicer"/>\n    <header_item key="X-BBL-Client-Version" value="{BBL_VERSION}"/>\n'
+                   '  </header>\n</config>\n')
+
 PLATES = [  # (plate name, pieces) — AMS plates mix colours inside one piece; one-colour plates need no swaps
     ('olas-AMS', ['ola', 'mar', 'orilla']),
     ('cielo-y-sol-AMS', ['cielo-y-sol']),
@@ -185,8 +262,10 @@ if __name__ == '__main__':
         h = max(ext_of(ms)[2] for _, ms, _, _ in bed)
         cl = sorted({COLOURS[c][0] for n, *_ in bed for _, c in pieces[n]})
         print(f'plate {i + 1}: {pname:16s} {len(bed):2d} pieces, {len(cl)} colours ({", ".join(cl)}), tallest {h:.1f} mm:', ', '.join(n for n, *_ in bed))
-    write_3mf(os.path.join(OUT, 'cuadro-vivo.3mf'), allobj, 'Cuadro vivo · La ola')
-    for f in [os.path.join(OUT, 'cuadro-vivo.3mf')] + [os.path.join(pdir, f) for f in sorted(os.listdir(pdir))]:
+    write_3mf(os.path.join(OUT, 'cuadro-vivo-generico.3mf'), allobj, 'Cuadro vivo · La ola')
+    write_bbl_3mf(os.path.join(OUT, 'cuadro-vivo.3mf'),
+                  [(pn, [(n, pieces[n], (x, y)) for n, ms, x, y in bed]) for pn, bed in plates], 'Cuadro vivo · La ola')
+    for f in [os.path.join(OUT, 'cuadro-vivo-generico.3mf')] + [os.path.join(pdir, f) for f in sorted(os.listdir(pdir))]:
         s_ = trimesh.load(f)
         bad = [k for k, g in s_.geometry.items() if not g.is_watertight]
         assert not bad, (f, bad)
