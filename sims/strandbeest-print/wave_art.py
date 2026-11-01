@@ -80,7 +80,9 @@ def design():
     blue = navy.buffer(-2.0).union(unary_union(stripes_blue).intersection(navy.buffer(-0.8))).intersection(navy.buffer(-0.6))
     light = unary_union(stripes_light).intersection(blue.buffer(-0.6)).intersection(sbox(0, 9, W, W).union(sbox(0, 0, W, 14)))
     white = foam.intersection(frame.buffer(-1.0))
-    return dict(sun=sun, navy=navy, blue=blue, light=light, white=white, frame=frame)
+    return dict(sun=sun, navy=navy, blue=blue, light=light, white=white, frame=frame,
+                sea=sea, wave_band=wave_band, back=back, foam_crest=unary_union([lip, row1, row2, spray]).intersection(frame.buffer(-1.0)),
+                foam_sea=swell.intersection(frame.buffer(-1.0)), sea_top=(xs, sea_top))
 
 BANDS = [  # name, z0, z1, colour
     ('crema', 0.0, 1.6, '#efe6d2'), ('rojo', 1.6, 2.4, '#c8372d'), ('marino', 2.4, 3.6, '#1d2f5e'),
