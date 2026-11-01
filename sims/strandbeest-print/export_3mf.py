@@ -149,12 +149,12 @@ def write_3mf(path, objects, title):
         z.writestr('3D/3dmodel.model', '\n'.join(model))
 
 BBL_VERSION = '02.00.02.01'
-def write_bbl_3mf(path, plates, title):
+def write_bbl_3mf(path, plates, title, printer='P2S'):
     """A Bambu Studio project: every piece on its own plate, filaments already set to the eight colours (A1, PLA).
     plates: [(plate name, [(piece name, [(trimesh, colour key), ...], (x, y) on that plate)])]. The project settings
-    are a Bambu-saved A1 project with 8 PLA filaments (sims/strandbeest-print/bbl/), only colours and tower changed."""
+    come from bbl/make_configs.py (Bambu's own system profiles for that printer, 8 × Bambu PLA Basic)."""
     import json, xml.sax.saxutils as X
-    cfg = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bbl', 'project_settings_A1_8xPLA.json')))
+    cfg = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bbl', f'project_settings_{printer}.json')))
     assert len(cfg['filament_colour']) == len(ORDER)
     cfg['filament_colour'] = [COLOURS[k][1] for k in ORDER]
     cfg['enable_prime_tower'] = '1'
@@ -263,8 +263,9 @@ if __name__ == '__main__':
         cl = sorted({COLOURS[c][0] for n, *_ in bed for _, c in pieces[n]})
         print(f'plate {i + 1}: {pname:16s} {len(bed):2d} pieces, {len(cl)} colours ({", ".join(cl)}), tallest {h:.1f} mm:', ', '.join(n for n, *_ in bed))
     write_3mf(os.path.join(OUT, 'cuadro-vivo-generico.3mf'), allobj, 'Cuadro vivo · La ola')
-    write_bbl_3mf(os.path.join(OUT, 'cuadro-vivo.3mf'),
-                  [(pn, [(n, pieces[n], (x, y)) for n, ms, x, y in bed]) for pn, bed in plates], 'Cuadro vivo · La ola')
+    for pr in ('P2S', 'A1'):
+        write_bbl_3mf(os.path.join(OUT, f'cuadro-vivo-{pr}.3mf'),
+                      [(pn, [(n, pieces[n], (x, y)) for n, ms, x, y in bed]) for pn, bed in plates], 'Cuadro vivo · La ola', pr)
     for f in [os.path.join(OUT, 'cuadro-vivo-generico.3mf')] + [os.path.join(pdir, f) for f in sorted(os.listdir(pdir))]:
         s_ = trimesh.load(f)
         bad = [k for k, g in s_.geometry.items() if not g.is_watertight]

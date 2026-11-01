@@ -5,13 +5,15 @@ Detrás del cielo, un eje de levas con tres excéntricas en horquillas, movido p
 (10:40 · 14:26 = 7,4:1, un ciclo cada ~7,6 s). Caja 142 × 164 × 94 mm. Sin soportes y sin pegamento.
 
 ARCHIVOS
-- cuadro-vivo.3mf: PROYECTO DE BAMBU STUDIO. Cada grupo de piezas ya está en su placa, tumbado y con sus colores,
-  y los 8 filamentos ya vienen puestos (PLA, impresora A1 0.4). Si imprimes en la P2S, cambia la impresora arriba
-  a la izquierda: las placas y los colores se mantienen.
+- cuadro-vivo-P2S.3mf / cuadro-vivo-A1.3mf: PROYECTO DE BAMBU STUDIO para cada impresora. Cada grupo de piezas en su
+  placa, tumbado y con sus colores; 8 filamentos Bambu PLA Basic ya puestos, ajustes de "0.20mm Standard" de esa
+  impresora sacados de los perfiles oficiales de Bambu.
   Placa 1 olas (AMS, 4 colores) · 2 cielo y sol (AMS, 2 colores) · 3 caja · 4 marco · 5 tapa (negro) · 6 mecanismo (gris)
   Filamentos: 1 azul marino, 2 azul, 3 celeste, 4 blanco, 5 crema, 6 rojo, 7 negro, 8 gris.
-- cuadro-vivo-generico.3mf y por-placa/: lo mismo en 3MF estándar, para otros laminadores.
+- probeta-P2S.3mf / probeta-A1.3mf: la probeta de ajustes (imprimir antes que nada).
+- cuadro-vivo-generico.3mf y por-placa/: 3MF estándar para otros laminadores.
 - *.stl: las piezas sueltas.
+Si los tetones o tapones salen frágiles en PLA, imprime la placa 6 (mecanismo) en PETG: aguanta mejor los ajustes a presión.
 
 CÓMO ENCAJA TODO (sin loctite)
 - Colores: van impresos dentro de cada pieza (cada color es una columna que sale del azul marino; nada flota).
@@ -29,7 +31,7 @@ CÓMO ENCAJA TODO (sin loctite)
 - Marco y tapa trasera: se clavan a presión en la caja (un cordón en su labio salta en una ranura de la caja).
   La tapa sujeta el soporte y el fondo en su sitio; tiene ranura para colgar y ventana para el cable (3–5 V).
 
-ANTES DE NADA: PROBETA DE AJUSTES (probeta.3mf, unos minutos)
+ANTES DE NADA: PROBETA DE AJUSTES (probeta-P2S.3mf o probeta-A1.3mf, unos minutos)
   A  tetones de brazo en agujeros de 2,3 / 2,4 (el del diseño, marcado *) / 2,5: ¿cuál entra firme sin partir?
   B  tapones de 2,6 / 2,7 (diseño) / 2,8 en un tornillo M3; tira con el M3 por el agujero de pivote de 3,5
      (debe girar libre) y el avellanado (la cabeza debe quedar al ras)

@@ -5,7 +5,9 @@ probeta (`probeta.py`). Cuando haya resultados de impresión, se anotan aquí co
 
 ## Impresoras y material
 - Bambu Lab A1 (con AMS/BMCU) y P2S Combo (AMS). Cama 256 × 256. PLA, boquilla 0,4.
-- Proyectos `.3mf` se generan para la A1 0.4; en la P2S basta cambiar la impresora en Bambu Studio.
+- Los proyectos `.3mf` se generan para la P2S y la A1 (0.4) con `bbl/make_configs.py`, que construye la configuración a
+  partir de los perfiles oficiales de Bambu (herencias, includes, variante de boquilla "Direct Drive Standard").
+- PLA es frágil en ajustes a presión (lección del Strandbeest paramétrico de nablu): si la probeta falla, PETG en las piezas con tetones o clics.
 
 ## Holguras (verificadas en simulación, *pendiente* de confirmar impresas)
 | Uso | Valor |
@@ -58,8 +60,21 @@ probeta (`probeta.py`). Cuando haya resultados de impresión, se anotan aquí co
   (con id repetidos, todas las piezas cargaron la forma de la primera).
 - Placas: columnas = `ceil(sqrt(n))`, paso 256 × 1,2 = 307,2 mm; la placa i empieza en (col · 307,2, −fila · 307,2).
 
+## Herramientas externas usadas
+- **bambox** (estampo/bambox): idea de generar `project_settings.config` desde perfil de máquina + filamentos. Solo trae
+  la P1S, así que `bbl/make_configs.py` hace lo mismo desde los perfiles oficiales de BambuStudio.
+- **cq_gears** (meadiode/cq_gears): referencia de evolvente. `check_gears.py` confirma que nuestros dientes son la evolvente
+  menos 0,25 mm (la mitad del backlash) y que los pares engranan con ≥ 0,2 mm en un barrido fino.
+- **bd_warehouse**: medidas de la cabeza del M3 avellanado (ISO 10642, Ø5,64) → avellanado de 90° con +0,2.
+- **Bambu Studio en línea de comandos**: no se pudo instalar aquí (las descargas de releases de GitHub están bloqueadas en
+  este entorno). En su lugar, `bbl/check_3mf.py` repite las comprobaciones del cargador de Bambu.
+- No usados: CamFollowerJS (nuestras levas son excéntricas circulares) y wk_mechanics (Blender, de pago).
+
 ## Verificación que se hace siempre
 - Barrido del ciclo completo (cada 10–15°) con `min_gap` entre todos los pares que se mueven.
 - Lo oculto no asoma por la ventana en ninguna posición.
 - Todas las mallas estancas al volver a leer el 3MF.
 - Vista previa de las placas en imagen antes de entregar.
+- `bbl/check_3mf.py` sobre cada proyecto: placas, id únicos, piezas dentro de su placa, mallas estancas.
+- `check_gears.py` si cambian los engranajes.
+- Para dientes, barrido 2D fino (cientos de pasos por diente): el barrido 3D del ciclo no basta.

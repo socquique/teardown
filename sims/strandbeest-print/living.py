@@ -186,6 +186,7 @@ RAILS = (GA - 3.0, MB - 2.0); RAIL_W = 4.0; RAIL_D = 1.6  # floor rails for the 
 MOTOR_RIB = (IX1 - (MB + 3.0 + 18.8)) + 0.05            # rib height: 0.05 mm of press on the motor's side
 LIP = 5.0                                                 # snap lips of the frame and the rear cover
 SHAFT_X0 = IX0 - 6.3                                      # the shaft's head sits just outside the left wall
+CSK_R = 5.64 / 2 + 0.2                                    # 90° countersink for an ISO 10642 / DIN 7991 M3 head (Ø5.64 per bd_warehouse) + 0.2
 
 def ring(zc, r, inset):
     """a round bead (or groove) running round the inside of the box at depth zc, its centre `inset` mm inside the walls'
@@ -215,7 +216,7 @@ def fixed():
         zc = b['z0'] + PT
         need = zc + 0.35 + 1.2 + BACK_T                     # from the panel's back face to the cap's front
         b['screw'] = L_ = min(l for l in (10, 12, 16, 20, 25, 30, 35, 40) if l >= need)
-        back = back - cyl(1.65, BACK_T + 2, b['pivot'], PIV_Y, -BACK_T - 1) - cyl(3.05, 1.75, b['pivot'], PIV_Y, -BACK_T - 0.01, r2=1.65)
+        back = back - cyl(1.65, BACK_T + 2, b['pivot'], PIV_Y, -BACK_T - 1) - cyl(CSK_R, CSK_R - 1.65, b['pivot'], PIV_Y, -BACK_T - 0.01, r2=1.65)
         sc = cyl(2.8, 1.7, b['pivot'], PIV_Y, -BACK_T, r2=1.5) + cyl(1.5, L_ - 1.7, b['pivot'], PIV_Y, -BACK_T + 1.7)
         screws = sc if screws is None else screws + sc
         c = cyl(2.6, 1.2, b['pivot'], PIV_Y, zc + 0.35) - cyl(1.35, 3, b['pivot'], PIV_Y, zc)

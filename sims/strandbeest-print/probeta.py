@@ -41,7 +41,7 @@ pieces += [(f'A-brazo-{i + 1}', arm) for i in range(3)]
 for i, d in enumerate((2.6, 2.7, 2.8)):
     cap = cyl(2.6, 1.2) - cyl(d / 2, 3, 0, 0, -1)
     pieces.append((f'B-tapon-{d:.1f}', cap))
-strip = box(0, 30, 0, 10, 0, L.PT) - cyl(1.75, 5, 6, 5, -1) - cyl(1.65, 5, 18, 5, -1) - cyl(3.05, 1.75, 18, 5, -0.01, r2=1.65)
+strip = box(0, 30, 0, 10, 0, L.PT) - cyl(1.75, 5, 6, 5, -1) - cyl(1.65, 5, 18, 5, -1) - cyl(L.CSK_R, L.CSK_R - 1.65, 18, 5, -0.01, r2=1.65)
 strip = strip - label('3.5', 26, 5, L.PT, 2.4, 0.4)
 pieces.append(('B-pivote-y-avellanado', strip))            # 3.5 pivot hole; countersunk M3 hole as in the sky panel
 
@@ -87,7 +87,8 @@ if __name__ == '__main__':
     assert len(beds) == 1, 'does not fit one plate'
     bed = beds[0]
     plates = [('probeta', [(n, [(ms[0], 'gris')], (x, y)) for n, ms, x, y in bed])]
-    E.write_bbl_3mf(os.path.join(L.OUT, 'probeta.3mf'), plates, 'Cuadro vivo · probeta de ajustes')
+    for pr in ('P2S', 'A1'):
+        E.write_bbl_3mf(os.path.join(L.OUT, f'probeta-{pr}.3mf'), plates, 'Cuadro vivo · probeta de ajustes', pr)
     for n, ms, x, y in bed:
         ms[0].export(os.path.join(L.OUT, f'probeta-{n}.stl'))
     for n, ms, x, y in bed: print(f'{n:24s} {ms[0].extents.round(1)} watertight={ms[0].is_watertight}')
