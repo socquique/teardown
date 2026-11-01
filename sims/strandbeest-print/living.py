@@ -105,7 +105,9 @@ def body_parts(bn):
         if reg.is_empty: continue
         if i == 0:
             reg = unary_union([reg, legs_of(b)])
-        m = ext(reg.buffer(0), ZT[n], Z[n])
+        reg = reg.buffer(-0.1).buffer(0.1)         # no corners touching at a point: every layer is a clean solid
+        reg = unary_union([g for g in getattr(reg, 'geoms', [reg]) if g.area > 0.6])
+        m = ext(reg, ZT[n], Z[n])
         if i == 0:
             m = m - cyl(1.75, PT + 2, b['pivot'], PIV_Y, Z[n] - 1)                        # 3.0 pin, 0.25 clearance
             wy, wz, oy, oz = yoke_dims(b); x = b['drive']
@@ -163,10 +165,15 @@ def fixed():
     for b in BODIES.values():
         x = b['drive']
         back = back - box(x - 2.6, x + 2.6, LEG_Y0 - 1.0 - b['e'], LEG_Y0 + 7.0 + b['e'], -BACK_T - 1, 1)
-    for b in BODIES.values():                      # pivot pins with a cap just in front of the carrier
+    caps = None
+    for b in BODIES.values():                      # pivot pins; a push-on cap (glued) keeps each carrier on its pin
         zc = b['z0'] + PT
-        back = back + cyl(1.5, zc + 0.36, b['pivot'], PIV_Y, -0.01) + cyl(2.6, 0.8, b['pivot'], PIV_Y, zc + 0.35)
+        back = back + cyl(1.5, zc + 1.56, b['pivot'], PIV_Y, -0.01)
+        c = cyl(2.6, 1.2, b['pivot'], PIV_Y, zc + 0.35) - cyl(1.45, 3, b['pivot'], PIV_Y, zc)
+        caps = c if caps is None else caps + c
     F['back'] = back
+    F['caps'] = caps
+    F['cap_local'] = cyl(2.6, 1.2, 0, 0, 0) - cyl(1.45, 3, 0, 0, -1)
     F['sun'] = ext(D['sun'], 1.2, 0)                # red disc glued on the sky
     shaft = (cyl(SH_R, GA + GT - (IX0 - 4.0), 0, 0, 0) ^ box(-SH_R - 1, SH_FLAT, -SH_R - 1, SH_R + 1, -1, 400))
     F['shaft_local'] = shaft                        # along local z from 0
@@ -191,7 +198,7 @@ def fixed():
     F['bearing'] = box(GA - 3.6, GA - 0.6, YB, SH_Y + 12.0, REAR, -3.0) - Manifold.cylinder(5, SH_R + 0.35, SH_R + 0.35, SEG).rotate([0, 90, 0]).translate([GA - 4.6, SH_Y, SH_Z])
     F['motor'] = box(MB + 3.0, MB + 3.0 + 18.8, my - 11.2, my + 37.2, mz - 11.2, mz + 11.2)                # TT body (stand-in)
     F['g30'] = ext(gp(ZS), GT) - d_hole(SH_R + 0.2, SH_FLAT + 0.2, 0, GT + 2)
-    F['g_comp'] = ext(gp(ZC), GT, 0) + ext(gp(ZB), GT, GT + 0.6) - cyl(1.95, 20, 0, 0, -1)
+    F['g_comp'] = ext(gp(ZC), GT, 0) + cyl(M_ * ZC / 2 - 1.6, 0.8, 0, 0, GT - 0.1) + ext(gp(ZB), GT, GT + 0.6) - cyl(1.95, 20, 0, 0, -1)   # hub joins the two gears
     F['g_pin'] = ext(gp(10), GT, 0) - (cyl(2.8, 9, 0, 0, -1) ^ box(-1.975, 1.975, -4, 4, -2, 9))           # TT D-shaft
     for bn in BODIES: F['ecc_' + bn], F['washer_' + bn] = ecc(bn)
     return F
@@ -219,6 +226,7 @@ def pose_all(F, bodies, t):
     P['g_comp'] = at_yz(F['g_comp'], GA, CPD, PC + t * ZS / ZC)
     P['g_pin'] = at_yz(F['g_pin'], GB, MOT, PM - t * RATIO)
     for k in ('back', 'sun', 'base', 'side_l', 'side_r', 'top', 'rear', 'frame', 'bracket', 'bearing', 'motor'): P[k] = F[k]
+    P['back'] = F['back'] + F['caps']
     return P
 
 def union(ms):
@@ -273,6 +281,7 @@ if __name__ == '__main__':
         for n, m in bodies[bn].items(): to_tm(m.translate([0, 0, -Z[n]])).export(os.path.join(OUT, f'{n}.stl'))
         to_tm(F['ecc_' + bn]).export(os.path.join(OUT, f'excentrica-{bn}.stl'))
         to_tm(F['washer_' + bn]).export(os.path.join(OUT, f'arandela-{bn}.stl'))
+    to_tm(F['cap_local']).export(os.path.join(OUT, 'tapon-pasador-x3.stl'))
     for k, n in (('back', 'fondo-cielo'), ('sun', 'sol'), ('base', 'caja-base'), ('side_l', 'caja-lado-izq'), ('side_r', 'caja-lado-der'),
                  ('top', 'caja-techo'), ('rear', 'caja-tapa-trasera'), ('frame', 'marco'), ('bracket', 'soporte-motor'), ('bearing', 'soporte-eje')):
         to_tm(F[k]).export(os.path.join(OUT, f'{n}.stl'))
@@ -288,6 +297,7 @@ if __name__ == '__main__':
         for (n, reg, col) in b['sheets']:
             if n in bodies[bn]: parts.append(dict(name=n, color=col, body=bn, mesh=mesh(bodies[bn][n])))
         parts.append(dict(name='excentrica-' + bn, color='#e0a030', ecc=bn, mesh=mesh(F['ecc_' + bn] + F['washer_' + bn])))
+    parts.append(dict(name='caps', color='#9aa3ad', fixed=True, mesh=mesh(F['caps'])))
     for k, col in (('back', '#efe6d2'), ('sun', '#c8372d'), ('base', '#d8d2c4'), ('side_l', '#d8d2c4'), ('side_r', '#d8d2c4'), ('top', '#d8d2c4'),
                    ('rear', '#d8d2c4'), ('frame', '#2b2b2b'), ('bracket', '#9aa3ad'), ('bearing', '#9aa3ad'), ('motor', '#f2c200')):
         parts.append(dict(name=k, color=col, fixed=True, mesh=mesh(F[k])))

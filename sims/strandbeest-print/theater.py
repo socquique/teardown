@@ -83,7 +83,7 @@ def build():
     cpd = (y1 + 15 * math.sin(ang), z1 + 15 * math.cos(ang))             # below and in front of roller 1
     ang2 = math.radians(110)                                              # the motor sits up the side
     mot = (cpd[0] + 25 * math.sin(ang2), cpd[1] + 25 * math.cos(ang2))
-    comp = ext(gp(10), GT, 0) + ext(gp(40), GT, GT + 0.6) - cyl(1.85, 20, 0, 0, -1)   # turns on a 3.5 mm pin from the wall
+    comp = ext(gp(10), GT, 0) + cyl(M_ * 10 / 2 - 1.6, 0.8, 0, 0, GT - 0.1) + ext(gp(40), GT, GT + 0.6) - cyl(1.85, 20, 0, 0, -1)   # hub joins the two gears   # turns on a 3.5 mm pin from the wall
     pin_m = ext(gp(10), GT, 0) - (cyl(2.8, 9, 0, 0, -1) ^ box(-1.975, 1.975, -4, 4, -2, 9))   # TT D-shaft
     # the compound turns on a pin standing out of the right wall
     wr = wr + Manifold.cylinder(2 * GT + 1.6, 1.7, 1.7, SEG).rotate([0, 90, 0]).translate([IW + T - 0.01, cpd[0], cpd[1]])
