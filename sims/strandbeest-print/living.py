@@ -208,18 +208,24 @@ def fixed():
     for b in BODIES.values():
         x = b['drive']
         back = back - box(x - 2.6, x + 2.6, LEG_Y0 - 1.0 - b['e'], LEG_Y0 + 7.0 + b['e'], -BACK_T - 1, 1)
-    caps = None
-    for b in BODIES.values():                      # pivot pins; a press-on cap keeps each carrier on its pin
+    caps = None; screws = None
+    for b in BODIES.values():
+        # pivots: countersunk M3 screws (DIN 7991) from behind, flush with the panel's back; a printed cap threads onto
+        # the tip in front of the carrier. A steel pin is far stronger than a printed 3 mm peg.
         zc = b['z0'] + PT
-        back = back + cyl(1.5, zc + 1.56, b['pivot'], PIV_Y, -0.01)
-        c = cyl(2.6, 1.2, b['pivot'], PIV_Y, zc + 0.35) - cyl(1.4, 3, b['pivot'], PIV_Y, zc)
+        need = zc + 0.35 + 1.2 + BACK_T                     # from the panel's back face to the cap's front
+        b['screw'] = L_ = min(l for l in (10, 12, 16, 20, 25, 30, 35, 40) if l >= need)
+        back = back - cyl(1.65, BACK_T + 2, b['pivot'], PIV_Y, -BACK_T - 1) - cyl(3.05, 1.75, b['pivot'], PIV_Y, -BACK_T - 0.01, r2=1.65)
+        sc = cyl(2.8, 1.7, b['pivot'], PIV_Y, -BACK_T, r2=1.5) + cyl(1.5, L_ - 1.7, b['pivot'], PIV_Y, -BACK_T + 1.7)
+        screws = sc if screws is None else screws + sc
+        c = cyl(2.6, 1.2, b['pivot'], PIV_Y, zc + 0.35) - cyl(1.35, 3, b['pivot'], PIV_Y, zc)
         caps = c if caps is None else caps + c
     # tabs on the panel's sides slide in the box's grooves from behind
     for y0 in TABS:
         back = back + box(IX0 - TAB, IX0 + 0.5, y0, y0 + TAB_L, -BACK_T, 0) + box(IX1 - 0.5, IX1 + TAB, y0, y0 + TAB_L, -BACK_T, 0)
     F['back'] = back
-    F['caps'] = caps
-    F['cap_local'] = cyl(2.6, 1.2, 0, 0, 0) - cyl(1.4, 3, 0, 0, -1)          # 0.1 interference on the 3.0 pin
+    F['caps'] = caps; F['screws'] = screws
+    F['cap_local'] = cyl(2.6, 1.2, 0, 0, 0) - cyl(1.35, 3, 0, 0, -1)         # 2.7 bore: grips the M3 thread
     F['sun'] = ext(D['sun'], 1.2, 0)                # red disc: printed with the sky in one piece (AMS)
     shaft = ((cyl(SH_R, GA + GT - SHAFT_X0, 0, 0, 0) + cyl(4.5, 2.0, 0, 0, 0)) ^ box(-5, SH_FLAT, -5, 5, -1, 400))   # head outside the left wall
     F['shaft_local'] = shaft                        # along local z from 0
@@ -291,7 +297,7 @@ def pose_all(F, bodies, t):
     P['g_comp'] = at_yz(F['g_comp'], GA, CPD, PC + t * ZS / ZC)
     P['g_pin'] = at_yz(F['g_pin'], GB, MOT, PM - t * RATIO)
     for k in ('back', 'sun', 'tube', 'rear', 'frame', 'gearbox', 'motor'): P[k] = F[k]
-    P['back'] = F['back'] + F['caps']
+    P['back'] = F['back'] + F['caps'] + F['screws']
     return P
 
 def union(ms):
@@ -308,6 +314,7 @@ if __name__ == '__main__':
     for bn in BODIES:
         for n, m in bodies[bn].items():
             if m.volume() < 1: print('EMPTY', n)
+    print('screws M3 x', {k: v['screw'] for k, v in BODIES.items()})
     print('Z', {k: round(v, 1) for k, v in Z.items()}, 'LIP_Z', round(LIP_Z, 2))
     print('bodies', {k: dict(e=round(v['e'], 2), R=round(v['R'], 2)) for k, v in BODIES.items()}, 'phases', round(PC, 2), round(PM, 2))
     if '--fast' not in sys.argv:
@@ -363,6 +370,7 @@ if __name__ == '__main__':
         parts.append(dict(name=bn + '-brazo', color='#9aa3ad', body=bn, mesh=mesh(bodies[bn][bn + '-brazo'])))
         parts.append(dict(name='excentrica-' + bn, color='#e0a030', ecc=bn, mesh=mesh(F['ecc_' + bn] + F['washer_' + bn])))
     parts.append(dict(name='caps', color='#9aa3ad', fixed=True, mesh=mesh(F['caps'])))
+    parts.append(dict(name='screws', color='#c0c4c8', fixed=True, mesh=mesh(F['screws'])))
     for k, col in (('back', '#efe6d2'), ('sun', '#c8372d'), ('tube', '#2b2b2b'), ('rear', '#2b2b2b'), ('frame', '#2b2b2b'),
                    ('gearbox', '#9aa3ad'), ('motor', '#f2c200')):
         parts.append(dict(name=k, color=col, fixed=True, mesh=mesh(F[k])))
