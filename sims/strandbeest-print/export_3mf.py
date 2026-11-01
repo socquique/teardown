@@ -19,65 +19,74 @@ COLOURS = {  # name, hex
     'negro': ('Negro', '#2B2B2B'), 'gris': ('Gris', '#9AA3AD')}
 ORDER = list(COLOURS)
 
+CK = None
 def parts():
-    """(name, manifold, colour key) for every printed part."""
+    """(name, [(manifold, colour key), ...]) for every printed piece; several entries = one multicolour print (AMS)."""
     F = L.fixed(); out = []
+    ck = {L.NAVY: 'marino', L.BLUE: 'azul', L.LIGHT: 'celeste', L.WHITE: 'blanco'}
     for bn, b in L.BODIES.items():
         P = L.body_parts(bn)
-        for i, (n, reg, col) in enumerate(b['sheets']):
-            if n not in P: continue
-            key = {L.NAVY: 'marino', L.BLUE: 'azul', L.LIGHT: 'celeste', L.WHITE: 'blanco'}[col]
-            out.append((n, P[n], key))
-        out.append((f'excentrica-{bn}', F['ecc_' + bn], 'gris'))
-        out.append((f'arandela-{bn}', F['washer_' + bn], 'gris'))
-    for k, n, c in (('back', 'fondo-cielo', 'crema'), ('sun', 'sol', 'rojo'), ('frame', 'marco', 'negro'),
-                    ('base', 'caja-base', 'negro'), ('side_l', 'caja-lado-izq', 'negro'), ('side_r', 'caja-lado-der', 'negro'),
-                    ('top', 'caja-techo', 'negro'), ('rear', 'caja-tapa-trasera', 'negro'),
-                    ('bracket', 'soporte-motor', 'gris'), ('bearing', 'soporte-eje', 'gris')):
-        out.append((n, F[k], c))
-    for i in range(3): out.append((f'tapon-pasador-{i + 1}', F['cap_local'], 'gris'))
-    out.append(('eje-levas', F['shaft_local'], 'gris'))
-    out.append(('engranaje-26', F['g30'], 'gris'))
-    out.append(('engranaje-doble-40-14', F['g_comp'], 'gris'))
-    out.append(('pinon-motor-10', F['g_pin'], 'gris'))
+        out.append((bn, [(P[n], ck[col]) for (n, reg, col) in b['sheets'] if n in P]))
+        out.append((f'{bn}-brazo', [(P[bn + '-brazo'], 'gris')]))
+        out.append((f'excentrica-{bn}', [(F['ecc_' + bn], 'gris')]))
+        out.append((f'arandela-{bn}', [(F['washer_' + bn], 'gris')]))
+    out.append(('cielo-y-sol', [(F['back'], 'crema'), (F['sun'], 'rojo')]))
+    for k, n, c in (('tube', 'caja', 'negro'), ('frame', 'marco', 'negro'), ('rear', 'tapa-trasera', 'negro'),
+                    ('gearbox', 'soporte-engranajes', 'gris')):
+        out.append((n, [(F[k], c)]))
+    for i in range(3): out.append((f'tapon-pasador-{i + 1}', [(F['cap_local'], 'gris')]))
+    out.append(('eje-levas', [(F['shaft_local'], 'gris')]))
+    out.append(('engranaje-26', [(F['g30'], 'gris')]))
+    out.append(('engranaje-doble-40-14', [(F['g_comp'], 'gris')]))
+    out.append(('pinon-motor-10', [(F['g_pin'], 'gris')]))
     return out
+
+FORCED = {'caja': np.eye(3),                                                     # standing on its back rim: walls vertical
+          'soporte-engranajes': trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0])[:3, :3]}   # on its rails
 
 ROTS = [np.eye(3)] + [trimesh.transformations.rotation_matrix(a, ax)[:3, :3]
                       for ax, a in (([1, 0, 0], math.pi), ([1, 0, 0], math.pi / 2), ([1, 0, 0], -math.pi / 2),
                                     ([0, 1, 0], math.pi / 2), ([0, 1, 0], -math.pi / 2))]
 
-def lay_flat(tm):
-    """the axis-aligned orientation with the most area touching the bed (ties: the lowest)."""
-    best = None
-    for R in ROTS:
-        v = tm.vertices @ R.T
-        z0 = v[:, 2].min()
-        f = tm.faces; n = np.cross(v[f[:, 1]] - v[f[:, 0]], v[f[:, 2]] - v[f[:, 0]])
-        a = np.linalg.norm(n, axis=1) / 2
-        on = (np.abs(v[f][:, :, 2] - z0).max(axis=1) < 1e-3) & (n[:, 2] < 0)
-        contact = a[on].sum(); h = v[:, 2].max() - z0
-        score = (round(contact, 0), -h)
-        if best is None or score > best[0]: best = (score, R)
-    R = best[1]
-    m = tm.copy(); m.vertices = m.vertices @ R.T
-    m.vertices -= [m.bounds[0][0], m.bounds[0][1], m.bounds[0][2]]
-    return m, best[0][0]
+def lay_flat(tms, R=None):
+    """the axis-aligned orientation with the most area touching the bed (ties: the lowest); same turn for every part."""
+    tm = trimesh.util.concatenate(tms)
+    if R is None:
+        best = None
+        for Rc in ROTS:
+            v = tm.vertices @ Rc.T
+            z0 = v[:, 2].min()
+            f = tm.faces; n = np.cross(v[f[:, 1]] - v[f[:, 0]], v[f[:, 2]] - v[f[:, 0]])
+            a = np.linalg.norm(n, axis=1) / 2
+            on = (np.abs(v[f][:, :, 2] - z0).max(axis=1) < 1e-3) & (n[:, 2] < 0)
+            score = (round(a[on].sum(), 0), -(v[:, 2].max() - z0))
+            if best is None or score > best[0]: best = (score, Rc)
+        R = best[1]
+    out = []
+    for t in tms:
+        m = t.copy(); m.vertices = m.vertices @ R.T; out.append(m)
+    lo = np.min([m.bounds[0] for m in out], axis=0)
+    for m in out: m.vertices -= lo
+    return out
 
-def footprint_turn(m):
+def footprint_turn(ms):
     """turn about z so the longer side runs along x."""
-    w, d = m.extents[:2]
+    tm = trimesh.util.concatenate(ms)
+    w, d = tm.extents[:2]
     if d > w:
-        m.vertices = m.vertices[:, [1, 0, 2]] * [1, -1, 1]
-        m.vertices -= m.bounds[0]
-    return m
+        for m in ms: m.vertices = m.vertices[:, [1, 0, 2]] * [1, -1, 1]
+        lo = np.min([m.bounds[0] for m in ms], axis=0)
+        for m in ms: m.vertices -= lo
+    return ms
 
+def ext_of(ms): return trimesh.util.concatenate(ms).extents if isinstance(ms, list) else ms.extents
 def pack(items):
     """shelf packing of (name, mesh) into beds; returns [[(name, mesh, x, y), ...], ...]."""
     U = BED - 2 * MARGIN
-    items = sorted(items, key=lambda it: -it[1].extents[1])
+    items = sorted(items, key=lambda it: -ext_of(it[1])[1])
     beds = []
     for name, m in items:
-        w, d = m.extents[:2]
+        w, d = ext_of(m)[:2]
         assert w <= U and d <= U, f'{name} does not fit the bed ({w:.0f} x {d:.0f})'
         placed = False
         for bed in beds:
@@ -92,33 +101,44 @@ def pack(items):
             beds.append({'shelves': [{'y': 0.0, 'h': d, 'x': w + GAP}], 'items': [(name, m, 0.0, 0.0)], 'top': d + GAP})
     out = []
     for bed in beds:   # centre the group on the bed
-        xs = [x + m.extents[0] for _, m, x, _ in bed['items']]; ys = [y + m.extents[1] for _, m, _, y in bed['items']]
+        xs = [x + ext_of(m)[0] for _, m, x, _ in bed['items']]; ys = [y + ext_of(m)[1] for _, m, _, y in bed['items']]
         ox = (U - max(xs)) / 2 + MARGIN; oy = (U - max(ys)) / 2 + MARGIN
         out.append([(n, m, x + ox, y + oy) for n, m, x, y in bed['items']])
     return out
 
 def write_3mf(path, objects, title):
-    """objects: [(name, trimesh, colour key, (x, y))]. Standard 3MF core + materials colour group."""
-    used = [k for k in ORDER if any(o[2] == k for o in objects)]
+    """objects: [(name, [(trimesh, colour key), ...], (x, y))]. Standard 3MF core + materials colour group; a piece with
+    several colours is one object made of components, one per colour (Bambu Studio maps each to a filament)."""
+    used = [k for k in ORDER if any(c == k for o in objects for _, c in o[1])]
     model = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<model unit="millimeter" xml:lang="es-ES" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" '
              'xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02">',
              f' <metadata name="Title">{title}</metadata>', ' <metadata name="Designer">socquique</metadata>',
-             ' <metadata name="Application">teardown living.py</metadata>',
              ' <resources>', '  <m:colorgroup id="1">']
     model += [f'   <m:color color="{COLOURS[k][1]}FF"/>' for k in used]
     model += ['  </m:colorgroup>']
-    build = []
-    for i, (name, m, key, (x, y)) in enumerate(objects):
-        oid = i + 2
-        model.append(f'  <object id="{oid}" type="model" name="{name} ({COLOURS[key][0]})" pid="1" pindex="{used.index(key)}">')
+    build = []; oid = 2
+    def mesh_obj(name, m, key):
+        nonlocal oid
+        i = oid; oid += 1
+        model.append(f'  <object id="{i}" type="model" name="{name}" pid="1" pindex="{used.index(key)}">')
         model.append('   <mesh><vertices>')
-        model += [f'    <vertex x="{a:.4f}" y="{b:.4f}" z="{c:.4f}"/>' for a, b, c in m.vertices]
+        model.extend(f'    <vertex x="{a:.6f}" y="{b:.6f}" z="{c:.6f}"/>' for a, b, c in m.vertices)
         model.append('   </vertices><triangles>')
-        model += [f'    <triangle v1="{a}" v2="{b}" v3="{c}"/>' for a, b, c in m.faces]
+        model.extend(f'    <triangle v1="{a}" v2="{b}" v3="{c}"/>' for a, b, c in m.faces)
         model.append('   </triangles></mesh>')
         model.append('  </object>')
-        build.append(f'  <item objectid="{oid}" transform="1 0 0 0 1 0 0 0 1 {x:.3f} {y:.3f} 0"/>')
+        return i
+    for name, parts_, (x, y) in objects:
+        if len(parts_) == 1:
+            top = mesh_obj(f'{name} ({COLOURS[parts_[0][1]][0]})', parts_[0][0], parts_[0][1])
+        else:
+            ids = [mesh_obj(f'{name} - {COLOURS[c][0]}', m, c) for m, c in parts_]
+            top = oid; oid += 1
+            model.append(f'  <object id="{top}" type="model" name="{name}"><components>')
+            model.extend(f'   <component objectid="{i}"/>' for i in ids)
+            model.append('  </components></object>')
+        build.append(f'  <item objectid="{top}" transform="1 0 0 0 1 0 0 0 1 {x:.3f} {y:.3f} 0"/>')
     model += [' </resources>', ' <build>'] + build + [' </build>', '</model>']
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as z:
         z.writestr('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
@@ -128,35 +148,46 @@ def write_3mf(path, objects, title):
                    '<Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>')
         z.writestr('3D/3dmodel.model', '\n'.join(model))
 
+PLATES = [  # (plate name, pieces) — AMS plates mix colours inside one piece; one-colour plates need no swaps
+    ('olas-AMS', ['ola', 'mar', 'orilla']),
+    ('cielo-y-sol-AMS', ['cielo-y-sol']),
+    ('caja-negro', ['caja']),
+    ('marco-negro', ['marco']),
+    ('tapa-negro', ['tapa-trasera']),
+    ('mecanismo-gris', None),            # everything else
+]
+
 if __name__ == '__main__':
-    groups = {k: [] for k in ORDER}
-    for name, man, key in parts():
-        tm = to_tm(man)
-        comps = man.decompose()
-        if len(comps) > 1 and name in ('fondo-cielo',) or (len(comps) > 1 and not name.split('-')[-1] in ('espuma', 'rayas', 'agua')): print('WARNING: more than one piece in', name, len(comps))
-        m, contact = lay_flat(tm)
-        m = footprint_turn(m)
-        groups[key].append((name, m))
-    plates = []
-    for key in ORDER:
-        if groups[key]:
-            for bed in pack(groups[key]): plates.append((key, bed))
+    pieces = {}
+    for name, lst in parts():
+        tms = [to_tm(m) for m, c in lst]
+        if len(lst) == 1 and len(lst[0][0].decompose()) > 1: print('WARNING: more than one piece in', name)
+        ms = lay_flat(tms, FORCED.get(name))
+        ms = footprint_turn(ms)
+        pieces[name] = list(zip(ms, [c for _, c in lst]))
+    taken = set(); plates = []
+    for pname, names in PLATES:
+        names = names or [n for n in pieces if n not in taken]
+        taken |= set(names)
+        for k, bed in enumerate(pack([(n, [m for m, _ in pieces[n]]) for n in names])):
+            plates.append((pname if k == 0 else f'{pname}-{k + 1}', bed))
     cols = math.ceil(math.sqrt(len(plates)))
     allobj = []
     pdir = os.path.join(OUT, 'por-placa'); os.makedirs(pdir, exist_ok=True)
     for f in os.listdir(pdir): os.remove(os.path.join(pdir, f))
-    for i, (key, bed) in enumerate(plates):
+    for i, (pname, bed) in enumerate(plates):
         r, c = divmod(i, cols)
         ox, oy = c * STRIDE, -r * STRIDE
-        allobj += [(n, m, key, (x + ox, y + oy)) for n, m, x, y in bed]
-        tag = f'placa-{i + 1:02d}-{COLOURS[key][0].lower().replace(" ", "-")}'
-        write_3mf(os.path.join(pdir, f'{tag}.3mf'), [(n, m, key, (x, y)) for n, m, x, y in bed], f'Cuadro vivo · {tag}')
-        h = max(m.extents[2] for _, m, _, _ in bed)
-        print(f'plate {i + 1}: {COLOURS[key][0]:12s} {len(bed):2d} parts, tallest {h:.1f} mm:', ', '.join(n for n, *_ in bed))
+        objs = [(n, pieces[n], (x, y)) for n, ms, x, y in bed]
+        allobj += [(n, p, (x + ox, y + oy)) for n, p, (x, y) in objs]
+        tag = f'placa-{i + 1}-{pname}'
+        write_3mf(os.path.join(pdir, f'{tag}.3mf'), objs, f'Cuadro vivo · {tag}')
+        h = max(ext_of(ms)[2] for _, ms, _, _ in bed)
+        cl = sorted({COLOURS[c][0] for n, *_ in bed for _, c in pieces[n]})
+        print(f'plate {i + 1}: {pname:16s} {len(bed):2d} pieces, {len(cl)} colours ({", ".join(cl)}), tallest {h:.1f} mm:', ', '.join(n for n, *_ in bed))
     write_3mf(os.path.join(OUT, 'cuadro-vivo.3mf'), allobj, 'Cuadro vivo · La ola')
-    # check: read back
     for f in [os.path.join(OUT, 'cuadro-vivo.3mf')] + [os.path.join(pdir, f) for f in sorted(os.listdir(pdir))]:
-        s = trimesh.load(f)
-        geoms = list(s.geometry.values()) if hasattr(s, 'geometry') else [s]
-        assert all(g.is_watertight for g in geoms), f
-    print(len(plates), 'plates;', len(allobj), 'objects; all watertight on reload')
+        s_ = trimesh.load(f)
+        bad = [k for k, g in s_.geometry.items() if not g.is_watertight]
+        assert not bad, (f, bad)
+    print(len(plates), 'plates;', len(allobj), 'pieces; every mesh watertight on reload')

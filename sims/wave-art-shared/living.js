@@ -153,7 +153,7 @@ export function runLiving() {
     } else {
       piece.add(m);
       fixed[p.name] = m;
-      if (['back', 'frame', 'side_l', 'side_r', 'top', 'rear', 'base'].includes(p.name)) {
+      if (['back', 'frame', 'tube', 'rear'].includes(p.name)) {
         m.material.transparent = true;
         glass.push(m);
       }
@@ -180,7 +180,7 @@ export function runLiving() {
     <div><span>motor</span>TT · 5 V · 59 rpm</div><div><span>reducción</span>10:40 · 14:26 = ${L.ratio.toFixed(1)}:1</div>
     <div><span>eje de levas</span>${L.rpm.toFixed(1)} rpm</div>
     ${bodyOrder.map((bn) => `<div><span>${NAMES[bn][0]}</span>±${L.bodies[bn].amp.toFixed(1)}° · e ${L.bodies[bn].e.toFixed(2)}</div>`).join('')}
-    <div><span>holgura mín.</span>0,23 mm</div><div><span>soportes</span>ninguno</div></div>`));
+    <div><span>holgura mín.</span>0,19 mm</div><div><span>soportes</span>ninguno</div><div><span>pegamento</span>ninguno</div></div>`));
   const cap = el(`<div class="cap"></div>`);
   app.appendChild(cap);
   const chip = el(`<div class="chip on"><i></i>VISITA AUTOMÁTICA</div>`);
@@ -267,7 +267,7 @@ export function runLiving() {
     [22, () => (goView(2), (S.fast = false)), 'Cada lámina pivota en un pasador escondido bajo el marco'],
     [32, () => (goView(3), (S.mechT = 1)), 'Detrás del cielo: un eje de levas y el motor TT a 7,4:1'],
     [44, () => goView(4), 'Tres excéntricas en horquillas: empujan y tiran, sin muelles'],
-    [56, () => (goView(2), (S.mechT = 0), (S.exT = 1)), 'Despiece: tres cuerpos, cuatro colores cada uno'],
+    [56, () => (goView(2), (S.mechT = 0), (S.exT = 1)), 'Despiece: tres piezas multicolor, sin pegamento'],
     [66, () => (S.exT = 0), ''],
   ];
   const TOUR_LEN = 72;
