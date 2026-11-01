@@ -106,6 +106,15 @@ def clean(reg, min_area=0.6):
     reg = reg.buffer(-0.1).buffer(0.1)     # no corners touching at a point: every piece is a clean solid
     return unary_union([g for g in getattr(reg, 'geoms', [reg]) if g.area > min_area])
 ARM_PEGS = (1.5, 4.5)                  # the arm's two pegs (y above LEG_Y0) into the drive leg
+# The arms print lying on their −x face, so the pegs are horizontal on the bed. A round peg's underside would hang
+# 0.25 mm over the bed and sag into a burr (seen in the first fit test), so each peg sits 0.45 mm toward the bed and is
+# cut flat there: it prints on the bed, and its flat side just leaves a little room in the round hole. Tip chamfered.
+PEG_R, PEG_SHIFT, PEG_L, PEG_TIP = 1.25, -0.45, 2.2, 0.4
+def peg(x_arm, y, z0):
+    """one arm peg standing on the arm's face z0 (pointing +z), for an arm whose −x face (x_arm − 1.5) is the bed."""
+    xc = x_arm + PEG_SHIFT
+    m = cyl(PEG_R, PEG_L - PEG_TIP, xc, y, z0) + cyl(PEG_R, PEG_TIP, xc, y, z0 + PEG_L - PEG_TIP, r2=PEG_R - 0.3)
+    return m ^ box(x_arm - 1.5, x_arm + 1.5, y - 2, y + 2, z0 - 1, z0 + PEG_L + 1)
 
 def body_parts(bn):
     """one body as {name: manifold} in art coordinates. Carrier and colours print together as ONE multicolour piece
@@ -124,7 +133,7 @@ def body_parts(bn):
         if i == 0:
             m = ext(clean(unary_union([reg, legs_of(b)])), PT, b['z0'])
             m = m - cyl(1.75, PT + 2, b['pivot'], PIV_Y, b['z0'] - 1)                    # 3.0 pin, 0.25 clearance
-            for py in ARM_PEGS: m = m - cyl(1.2, 1.9, b['drive'], LEG_Y0 + py, b['z0'] - 0.01)   # blind holes for the arm's pegs
+            for py in ARM_PEGS: m = m - cyl(1.2, 1.9, b['drive'] + PEG_SHIFT, LEG_Y0 + py, b['z0'] - 0.01)   # blind holes for the arm's pegs
             out[n] = m - holes
             continue
         k = i - 1
@@ -138,7 +147,7 @@ def body_parts(bn):
     yoke = box(x - 1.5, x + 1.5, SH_Y - oy, SH_Y + oy, SH_Z - oz, ztop) - box(x - 3, x + 3, SH_Y - wy, SH_Y + wy, SH_Z - wz, SH_Z + wz)
     pegs = None
     for py in ARM_PEGS:
-        p = cyl(1.25, 2.2, x, LEG_Y0 + py, b['z0'] - 0.6); pegs = p if pegs is None else pegs + p   # 0.05 press
+        p = peg(x, LEG_Y0 + py, b['z0'] - 0.6); pegs = p if pegs is None else pegs + p   # 0.05 press
     out[bn + '-brazo'] = arm + yoke + pegs
     return out
 
@@ -186,6 +195,7 @@ RAILS = (GA - 3.0, MB - 2.0); RAIL_W = 4.0; RAIL_D = 1.6  # floor rails for the 
 MOTOR_RIB = (IX1 - (MB + 3.0 + 18.8)) + 0.05            # rib height: 0.05 mm of press on the motor's side
 LIP = 5.0                                                 # snap lips of the frame and the rear cover
 SHAFT_X0 = IX0 - 6.3                                      # the shaft's head sits just outside the left wall
+BEAR_CLR = 0.3                                            # camshaft bearings (horizontal holes in the box wall and gearbox)
 CSK_R = 5.64 / 2 + 0.2                                    # 90° countersink for an ISO 10642 / DIN 7991 M3 head (Ø5.64 per bd_warehouse) + 0.2
 
 def ring(zc, r, inset):
@@ -233,7 +243,7 @@ def fixed():
     # --- the box: one tube (printed standing, no supports), the frame and the rear cover snap into its ends
     O = (IX0 - 4, IX1 + 4, YB - 4, TOP + 4)
     tube = box(O[0], O[1], O[2], O[3], REAR, LIP_Z) - box(IX0, IX1, YB, TOP, REAR - 1, LIP_Z + 1)
-    tube = tube - Manifold.cylinder(6, SH_R + 0.35, SH_R + 0.35, SEG).rotate([0, 90, 0]).translate([IX0 - 5, SH_Y, SH_Z])
+    tube = tube - Manifold.cylinder(6, SH_R + BEAR_CLR, SH_R + BEAR_CLR, SEG).rotate([0, 90, 0]).translate([IX0 - 5, SH_Y, SH_Z])
     for y0 in TABS:                                    # grooves for the panel's tabs, open at the back, closed at z = 0
         g = TAB + 0.25
         tube = tube - box(IX0 - g, IX0 + 0.01, y0 - 0.2, y0 + TAB_L + 0.2, REAR - 1, 0.0) - box(IX1 - 0.01, IX1 + g, y0 - 0.2, y0 + TAB_L + 0.2, REAR - 1, 0.0)
@@ -264,7 +274,7 @@ def fixed():
             - Manifold.cylinder(5, 2.05, 2.05, SEG).rotate([0, 90, 0]).translate([MB - 1, my + 11.15, mz]) \
             - box(MB - 1, MB + 4, my + 30.7 - 2.8, my + 30.7 + 2.8, mz - 2.3, mz + 2.3)
     br = br + Manifold.cylinder(MB - GA + 1.0, 1.7, 1.7, SEG).rotate([0, -90, 0]).translate([MB + 0.01, CPD[0], CPD[1]])   # compound's pin
-    bearing = box(GA - 3.6, GA - 0.6, YB + 0.2, SH_Y + 12.0, zg0, zg1) - Manifold.cylinder(5, SH_R + 0.35, SH_R + 0.35, SEG).rotate([0, 90, 0]).translate([GA - 4.6, SH_Y, SH_Z])
+    bearing = box(GA - 3.6, GA - 0.6, YB + 0.2, SH_Y + 12.0, zg0, zg1) - Manifold.cylinder(5, SH_R + BEAR_CLR, SH_R + BEAR_CLR, SEG).rotate([0, 90, 0]).translate([GA - 4.6, SH_Y, SH_Z])
     foot = box(GA - 3.6, MB + 3.0, YB + 0.2, YB + 3.2, zg0, zg1)
     for x0 in RAILS: foot = foot + box(x0, x0 + RAIL_W, YB - RAIL_D, YB + 0.3, zg0, zg1)
     F['gearbox'] = br + bearing + foot

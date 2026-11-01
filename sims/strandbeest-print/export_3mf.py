@@ -42,6 +42,7 @@ def parts():
     return out
 
 FORCED = {'caja': np.eye(3),                                                     # standing on its back rim: walls vertical
+          **{f'{bn}-brazo': trimesh.transformations.rotation_matrix(-math.pi / 2, [0, 1, 0])[:3, :3] for bn in L.BODIES},   # on its −x face: pegs flat on the bed
           'soporte-engranajes': trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0])[:3, :3]}   # on its rails
 
 ROTS = [np.eye(3)] + [trimesh.transformations.rotation_matrix(a, ax)[:3, :3]

@@ -16,19 +16,32 @@ probeta (`probeta.py`). Cuando haya resultados de impresión, se anotan aquí co
 | Print-in-place | 0,35 |
 | Engranajes m1: backlash | 0,5 (0,75 en los primeros diseños) |
 | Pivote: agujero sobre tornillo M3 / pasador Ø3 | Ø3,5 |
-| Tetón a presión Ø2,5 en agujero ciego | Ø2,4 (*pendiente*: probeta A, 2,3 / 2,4 / 2,5) |
+| Tetón a presión Ø2,5 (aplanado en la cara de la cama) en agujero ciego | Ø2,4 (*pendiente*: probeta v2 A, 2,3 / 2,4 / 2,5) |
 | Tapón sobre rosca M3 | agujero Ø2,7 (*pendiente*: probeta B, 2,6 / 2,7 / 2,8) |
-| Cierre a presión de tapas | labio a 0,15 de la pared, cordón r 0,45 → 0,3 de apriete en ranura r 0,6 (*pendiente*: probeta C) |
-| Eje en D Ø6, plano a 2,2: agujero en D | +0,2 en radio y en plano; cojinete Ø6,7 |
+| Cierre a presión de tapas | labio a 0,15 de la pared, cordón r 0,45 → 0,3 de apriete en ranura r 0,6 (**confirmado**) |
+| Eje en D Ø6, plano a 2,2: agujero en D | +0,2 en radio y en plano (**confirmado**) ; cojinete horizontal Ø6,6 (*pendiente* v2 D) |
 | Lengüetas en ranuras (deslizar) | +0,25 |
 | Encaje de capas de color impresas aparte (descartado) | 0,08 |
+
+## Resultados de impresión
+### 2026-11-01 · probeta v1 (P2S, PLA)
+- **A, tetones horizontales:** salen con rebaba debajo (la cara inferior del cilindro cuelga 0,25 mm sobre la cama) y no
+  entran. → v2: tetón desplazado 0,45 hacia la cama y cortado plano allí (se imprime apoyado), punta achaflanada 0,3.
+  Regla: **ningún cilindro horizontal a menos de ~0,5 mm de la cama sin aplanarlo.**
+- **B:** sin probar (falta tornillo M3).
+- **C, cordón del cierre:** entra bien en la ranura. OK.
+- **D:** arandela en D entra bien y arrastra con el eje (OK). Cojinete Ø6,7 impreso con el agujero vertical: holgado.
+  → los cojinetes reales tienen el agujero horizontal (salen algo más justos); diseño a Ø6,6 y la probeta v2 los prueba
+  de pie, 6,4 / 6,6 / 6,8.
+- **E:** el piñón entra perfecto en el eje del TT (OK). La placa de prueba no se pudo probar: su pie chocaba con el cuerpo
+  del motor (fallo de la probeta, no del soporte real, que se ha comprobado sin choque). → v2: placa más larga, pie debajo del motor.
 
 ## Motor TT (LA001, kit Marble Run 003)
 - 59 rpm a 5 V. Eje en D: Ø5,4, planos a 3,7 → agujero en el piñón Ø5,6 con planos a 3,95.
 - Para fijarlo en una placa: saliente del eje (agujero Ø9), tetón a +11,15 mm del eje (agujero Ø4,1),
   bulto a +30,7 (ranura 5,6 × 4,6). Envolvente de la caja reductora: 18,8 × 22,4 × 48,4 (de −11,2 a +37,2 desde el eje).
 - No basta con colocarlo: hay que apretarlo contra la placa (en el cuadro vivo, nervios en la pared de la caja, 0,05 de apriete).
-- *Pendiente*: probeta E confirma las tres posiciones.
+- Piñón en el eje D (Ø5,6, planos 3,95): **confirmado**. Saliente, tetón y bulto: *pendiente* (probeta v2 E).
 
 ## Uniones sin pegamento (lo que se ha elegido y por qué)
 - **Colores con AMS:** cada color es una columna que sale de la base hasta su altura, y los colores superiores atraviesan

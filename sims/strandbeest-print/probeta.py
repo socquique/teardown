@@ -32,9 +32,10 @@ for i, d in enumerate((2.30, 2.40, 2.50)):
         leg = leg - cyl(d / 2, 1.9, x, yy, -0.01)
     leg = leg - label(f'{d:.1f}' if i != 1 else '2.4*', x, 11.3, L.PT, 2.6, 0.4)
 pieces.append(('A-pata-agujeros', leg))
-arm = box(0, 30, 0, 6, 0, 3.0)                          # arm bar lying on its side: 6 tall in y, 3 thick
+arm = box(-1.5, 1.5, 0, 6, -30, -0.1)                   # a stub of the real arm, built as assembled (pegs along +z) ...
 for py in L.ARM_PEGS:
-    arm = arm + Manifold.cylinder(2.2, 1.25, 1.25, 48).rotate([0, -90, 0]).translate([0.01, py, 1.5])   # pegs out of the end, horizontal
+    arm = arm + L.peg(0, py, -0.6)                       # ... with the real pegs (flat on the bed side, chamfered tip)
+arm = arm.rotate([0, -90, 0])                            # ... and laid on its −x face like the real arms
 pieces += [(f'A-brazo-{i + 1}', arm) for i in range(3)]
 
 # B: caps with three bores (the screw is a real M3), and a strip of carrier with the 3.5 pivot hole
@@ -63,16 +64,19 @@ shaft_flat = shaft.rotate([0, 90, 0])                    # lies on its flat (as 
 pieces.append(('D-eje', shaft_flat))
 washer = cyl(6, 1.6) - d_hole(L.SH_R + 0.2, L.SH_FLAT + 0.2, 0, 4, -1)
 pieces.append(('D-arandela', washer))
-bear = box(-8, 8, -6, 20, 0, 3) - cyl(L.SH_R + 0.35, 5, 0, 0, -1)
-pieces.append(('D-cojinete', bear))
+# bearings stand up like the real ones (box wall, gearbox), so their holes are horizontal: Ø6.4 / 6.6 (design) / 6.8
+for d in (6.4, 6.6, 6.8):
+    bear = box(-8, 8, 0, 3, 0, 18) - Manifold.cylinder(5, d / 2, d / 2, 64).rotate([-90, 0, 0]).translate([0, -1, 10])
+    bear = bear + box(-8, 8, -6, 9, 0, 2)                # foot
+    pieces.append((f'D-cojinete-{d:.1f}', bear))
 
 # E: the motor plate around the TT's boss, locating pin and bump, standing up as in the real gearbox
-mp = box(0, 3, -9, 37, 0, 22)                            # x thin, y up, z across: shaft at (y, z) = (0, 11)
+mp = box(0, 3, -16, 37, 0, 22)                           # x thin, y up, z across: shaft at (y, z) = (0, 11); reaches below the motor body (−11.2)
 mp = mp - Manifold.cylinder(5, 4.5, 4.5, 64).rotate([0, 90, 0]).translate([-1, 0, 11]) \
         - Manifold.cylinder(5, 2.05, 2.05, 64).rotate([0, 90, 0]).translate([-1, 11.15, 11]) \
         - box(-1, 4, 30.7 - 2.8, 30.7 + 2.8, 11 - 2.3, 11 + 2.3)
 mp = mp.rotate([90, 0, 0])                               # y -> z: plate stands (like the real gearbox)
-mp = mp + box(-8, 11, -22, 0, -9, -7)                    # a foot, as the real one has
+mp = mp + box(-8, 11, -22, 0, -16, -14)                  # a foot, below the motor (the first one hit the motor body)
 pieces.append(('E-placa-motor', mp))
 F = L.fixed()
 pieces.append(('E-pinon-motor', F['g_pin']))
