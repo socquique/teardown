@@ -150,3 +150,21 @@ if __name__ == '__main__' and '--build' in sys.argv:
     to_tm(frame).export(os.path.join(OUT, 'ola-marco.stl')); to_tm(back).export(os.path.join(OUT, 'ola-tapa-trasera.stl'))
     t = to_tm(plate); print('plate', t.extents.round(1), 'closed', t.is_watertight, 'vol cm3', round(t.volume / 1000, 1))
     for name, z0, z1, col in BANDS: print(f'  {z0:.1f}-{z1:.1f} mm  {name}')
+
+if __name__ == '__main__' and '--web' in sys.argv:
+    # the bands' outlines for the live page (sims/wave-art-live)
+    import json
+    from shapely.geometry.polygon import orient
+    D = design(); out = {'W': W, 'bands': []}
+    for (name, z0, z1, col), reg in zip(BANDS, layers(D)):
+        reg = reg.buffer(0).simplify(0.06)
+        polys = [reg] if reg.geom_type == 'Polygon' else list(reg.geoms)
+        shapes = []
+        for p in polys:
+            if p.is_empty or p.area < 0.05: continue
+            p = orient(p, 1.0)
+            shapes.append({'outer': np.round(np.asarray(p.exterior.coords)[:-1], 2).tolist(),
+                           'holes': [np.round(np.asarray(h.coords)[:-1], 2).tolist() for h in p.interiors if Polygon(h).area > 0.05]})
+        out['bands'].append({'name': name, 'z0': z0, 'z1': z1, 'color': col, 'shapes': shapes})
+    pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'wave-art-shared', 'bands.json')
+    json.dump(out, open(pth, 'w'), separators=(',', ':')); print(pth, os.path.getsize(pth) // 1024, 'KB')
