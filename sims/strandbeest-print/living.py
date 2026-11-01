@@ -183,6 +183,7 @@ def at_yz(m, x, yz, deg):
 
 TABS = (0.0, 48.0, 96.0); TAB = 1.8; TAB_L = 20.0       # panel tabs (y starts), how far they reach into the walls
 RAILS = (GA - 3.0, MB - 2.0); RAIL_W = 4.0; RAIL_D = 1.6  # floor rails for the gearbox feet
+MOTOR_RIB = (IX1 - (MB + 3.0 + 18.8)) + 0.05            # rib height: 0.05 mm of press on the motor's side
 LIP = 5.0                                                 # snap lips of the frame and the rear cover
 SHAFT_X0 = IX0 - 6.3                                      # the shaft's head sits just outside the left wall
 
@@ -233,6 +234,10 @@ def fixed():
         tube = tube - box(x0 - 0.2, x0 + RAIL_W + 0.2, YB - RAIL_D - 0.2, YB + 0.01, REAR - 1, -3.0)
     for zc in (LIP_Z - LIP / 2, REAR + LIP / 2):       # snap grooves round the inside, where the lids' beads click in
         tube = tube - ring(zc, 0.6, 0.0)
+    # two ribs on the right wall press the TT motor against its bracket (it is located there by its boss, pin and bump)
+    my_, mz_ = MOT
+    for yc in (my_ - 4.0, my_ + 28.0):
+        tube = tube + box(IX1 - MOTOR_RIB, IX1 + 0.01, yc - 2.0, yc + 2.0, mz_ - 9.0, mz_ + 9.0)
     F['tube'] = tube
     def lid(z_plate0, z_plate1, z_lip0, z_lip1):
         m = box(O[0], O[1], O[2], O[3], z_plate0, z_plate1)
